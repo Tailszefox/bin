@@ -1,0 +1,597 @@
+#!/bin/bash
+
+trap finishScript SIGINT SIGTERM
+
+function finishScript()
+{
+    jobsRunning=`jobs -p | wc -l`
+
+    if [[ $jobsRunning -gt 0 ]]; then
+        echo Killing background process...
+        jobs -p
+        jobs -p | xargs kill
+    fi
+
+    sleep 3s
+    echo "Command stopped: $fullCommand"
+    echo Done
+    exit
+}
+
+function confirm()
+{
+    echo -n "$@ "
+    read -e answer
+    for response in y Y yes YES Yes Sure sure SURE OK ok Ok o O
+    do
+        if [ "_$answer" == "_$response" ]
+        then
+            return 0
+        fi
+    done
+
+    # Any answer other than the list above is considerred a "no" answer
+    return 1
+}
+
+fullCommand="$0 $@"
+
+DEFAULTLIMIT="1024k"
+DEFAULTFILENAME="%(upload_date)s - %(title)s - %(id)s.%(ext)s"
+
+start=""
+end=""
+speed=""
+speedNumber=""
+#unlimited=true
+unlimited=-1
+titleRegex=""
+titleRegexExcl=""
+prefix=""
+quality=" -f bestvideo+bestaudio"
+listFormats=""
+verbose=false
+verboseOption=""
+autoradio=false
+filename=""
+setFilename=false
+restrict="--restrict-filenames"
+convertAudio=""
+useAria=false
+useAriaParallel=4
+split=false
+splitDuration=0
+rawArgs=""
+
+videoIds=()
+videoUrls=()
+
+while getopts ":s:e:l:r:x:p:f:o:vbaFRCAUP:S:Y:h" opt; do
+    case $opt in
+        l)
+            speed=" -r $OPTARG"
+            speedNumber="$OPTARG"
+
+            useAriaParallel=1
+            unlimited=0
+            ;;
+        U)
+            unlimited=1
+            ;;
+        A)
+            useAria=true
+            ;;
+        r)
+            titleRegex=" --match-title \"$OPTARG\""
+            ;;
+        x)
+            titleRegexExcl=" --reject-title \"$OPTARG\""
+            ;;
+        v)
+            verbose=true
+            verboseOption="-v"
+            ;;
+        a)
+            autoradio=true
+            quality=" --max-quality 18"
+            split=true
+            splitDuration="1800"
+            ;;
+        s)
+            start=" --playlist-start $OPTARG"
+            ;;
+        e)
+            end=" --playlist-end $OPTARG"
+            ;;
+        b)
+            quality=" --max-quality 5"
+            ;;
+        f)
+            quality=" -f $OPTARG"
+            ;;
+        p)
+            prefix="$OPTARG"
+            ;;
+        F)
+            listFormats=" --list-formats"
+            quality=""
+            #useAria=false
+            ;;
+        o)
+            filename="$OPTARG"
+            setFilename=true
+            ;;
+        R)
+            restrict=""
+            ;;
+        C)
+            convertAudio=" --extract-audio"
+            #useAria=false
+            ;;
+        P)
+            useAria=true
+            useAriaParallel="$OPTARG"
+            ;;
+        S)
+            split=true
+            splitDuration="$OPTARG"
+            ;;
+        Y)
+            rawArgs=" $OPTARG"
+            ;;
+        h)
+            P=`basename "$0"`
+            echo -e "Usage: $P [options] URL"
+            echo -e "   -U"
+            echo -e "       Ne pas limiter la vitesse de téléchargement (défaut: limité à DEFAULTLIMIT)"
+            echo -e "   -l limite"
+            echo -e "       Limitation de la vitesse de download à \e[1mlimite\e[0m (implique -P 1)"
+            echo -e "   -s numéro"
+            echo -e "       Vidéo par laquelle démarrer"
+            echo -e "   -e numéro"
+            echo -e "       Vidéo à laquelle s'arrêter"
+            echo -e "   -r regex"
+            echo -e "       Télécharge uniquement les vidéos correspondantes à \e[1mregex\e[0m"
+            echo -e "   -x regex"
+            echo -e "       Ne télécharge pas les vidéos correspondantes à \e[1mregex\e[0m"
+            echo -e "   -f FORMAT"
+            echo -e "       Télécharge le format demandé"
+            echo -e "   -b"
+            echo -e "       Téléchargement en basse qualité (240p)"
+            echo -e "   -a"
+            echo -e "       Conversion pour l'autoradio"
+            echo -e "   -p prefixe"
+            echo -e "       Rajoute \e[1mprefix\e[0m au nom de fichier"
+            echo -e "   -F"
+            echo -e "       Liste les formats disponibles"
+            echo -e "   -o format"
+            echo -e "       Utilise \e[1mformat\e[0m pour nommer le fichier (défaut : \"$DEFAULTFILENAME\")"
+            echo -e "   -R"
+            echo -e "       Ne pas limiter le nom du fichier aux caractères ASCII"
+            echo -e "   -C"
+            echo -e "       Conversion de la vidéo en fichier audio (implique -A)"
+            echo -e "   -A"
+            echo -e "       Utiliser aria2 pour télécharger la vidéo"
+            echo -e "   -P chiffre"
+            echo -e "       Télécharge \e[1mchiffre\e[0m vidéos en parallèle avec aria (implique -A)"
+            echo -e "   -S secondes"
+            echo -e "       Divise la vidéo en plusieurs vidéos d'une durée de \e[1msecondes\e[0m"
+            echo -e "   -Y arguments"
+            echo -e "       Passe \e[1marguments\e[0m à youtube-dl"
+            echo -e "   -v"
+            echo -e "       Verbose : affiche la commande"
+            exit 0
+            ;;
+        *)
+            echo "Erreur: option inconnue trouvée"
+            exit 0
+            ;;
+    esac
+done
+
+if $verbose; then
+    set -x
+fi
+
+echo "Youtube-Convert"
+
+if [[ $quality == *bestvideo+bestaudio* ]] && $useAria; then
+    echo "Utilisation d'aria : limitation de la qualité maximale"
+    quality=" --max-quality 100"
+fi
+
+if [[ $unlimited == -1 ]] && ! $useAria; then
+    echo "Vitesse de téléchargement limitée à $DEFAULTLIMIT"
+    speed=" -r $DEFAULTLIMIT"
+    speedNumber="$DEFAULTLIMIT"
+fi
+
+shift $((OPTIND-1))
+
+playlist=false
+regexYouTube="(.*)(v=|embed/|.be/)(.{11})(.*)"
+regexYouTubePlaylist="(.*)playlist\?list=([A-Za-z0-9_\-]*)(.*)"
+regexYouTubeUser="(.*)/user/([A-Za-z0-9_\-]*)(.*)"
+regexYouTubeChannel="(.*)/channel/([A-Za-z0-9_\-]*)(.*)"
+regexDaily="(.*)video/([a-z0-9]{6,7})(.*)"
+regexVimeo="(.*)vimeo\.com/([0-9]{7,})(.*)"
+regexBlip="(.*)-([0-9]*)$"
+regexEscapist="(.*)/([0-9]{4})-(.*)"
+regexViddler=".*/embed/(\w+)/.*"
+regexNoco=".*/emission/([0-9]+)/.*"
+
+for url in $@
+do
+    echo ""
+    echo $url
+
+    if [[ $url == *youtube* || $url == *youtu.be* ]]; then
+        echo "YouTube"
+
+        if [[ $url =~ $regexYouTube ]]; then
+            n=${#BASH_REMATCH[*]}
+            id=${BASH_REMATCH[3]}
+            echo "ID : $id"
+            urlToDl="https://www.youtube.com/watch?v=$id"
+        else
+            echo "Pas d'ID trouvé"
+
+            if [[ $url =~ $regexYouTubePlaylist ]]; then
+                echo "Playlist trouvée"
+                n=${#BASH_REMATCH[*]}
+                id=${BASH_REMATCH[2]}
+                urlToDl="https://www.youtube.com/playlist?list=$id"
+                playlist=true
+            else
+                echo "Pas de playlist trouvée"
+                if [[ $url =~ $regexYouTubeUser ]]; then
+                    n=${#BASH_REMATCH[*]}
+                    id=${BASH_REMATCH[2]}
+                    echo "Username : $id"
+                    urlToDl="https://www.youtube.com/user/$id"
+                    playlist=true
+                else
+                    echo "Pas de nom trouvé"
+                    if [[ $url =~ $regexYouTubeChannel ]]; then
+                        n=${#BASH_REMATCH[*]}
+                        id=${BASH_REMATCH[2]}
+                        echo "Channel : $id"
+                        urlToDl="https://www.youtube.com/channel/$id"
+                        playlist=true
+                    else
+                        echo "Pas de chaîne trouvée"
+                        continue
+                    fi
+                fi
+            fi
+        fi
+
+    elif [[ $url == *dailymotion* ]]; then
+        echo "Dailymotion"
+
+        if [[ $url =~ $regexDaily ]]; then
+            n=${#BASH_REMATCH[*]}
+            id=${BASH_REMATCH[2]}
+            echo "ID : $id"
+            urlToDl="http://www.dailymotion.com/video/${id}_video"
+        else
+            echo "ID non trouvé."
+            continue
+        fi
+
+    elif [[ $url == *vimeo* ]]; then
+        echo "Vimeo"
+        
+        if [[ $url =~ $regexVimeo ]]; then
+            n=${#BASH_REMATCH[*]}
+            id=${BASH_REMATCH[2]}
+            echo "ID : $id"
+            urlToDl="http://vimeo.com/${id}"
+        else
+            echo "ID non trouvé."
+            continue
+        fi
+    elif [[ $url == *escapistmagazine* ]]; then
+        echo "The Escapist"
+
+        if [[ $url =~ $regexEscapist ]]; then
+            n=${#BASH_REMATCH[*]}
+            id=${BASH_REMATCH[2]}
+            echo "ID : $id"
+            urlToDl="http://www.escapistmagazine.com/videos/view/video/${id}-video"
+        else
+            echo "ID non trouvé."
+            continue
+        fi
+
+    elif [[ $url == *blip.tv* ]]; then
+        echo "Blip"
+
+        if [[ $url =~ $regexBlip ]]; then
+            n=${#BASH_REMATCH[*]}
+            id=${BASH_REMATCH[2]}
+            echo "ID : $id"
+            urlToDl="http://blip.tv/user/video-${id}"
+        else
+            echo "ID non trouvé."
+            continue
+        fi
+
+    elif [[ $url == *patv* ]]; then
+        echo "Penny Arcade"
+        if [[ `curl $url | grep blip.tv` =~ (.*)/play/(.*)\.html\.html(.*) ]]; then
+            secondUrl=${BASH_REMATCH[2]}
+            
+            if [[ `curl "http://blip.tv/play/$secondUrl" | grep file=` =~ (.*)file=(.*)flash%2F(.*)\" ]]; then
+                id=${BASH_REMATCH[3]}
+                echo "ID : $id"
+                
+                $0 "http://blip.tv/user/video-$id"
+            fi
+        fi
+
+        continue
+
+    elif [[ $url == *viddler* ]]; then
+        echo "Viddler"
+        
+        if [[ $url =~ $regexViddler ]]; then
+            n=${#BASH_REMATCH[*]}
+            id=${BASH_REMATCH[1]}
+            echo "ID : $id"
+            urlToDl="http://viddler.com/v/${id}"
+        else
+            echo "ID non trouvé."
+            continue
+        fi
+
+    elif [[ $url == *noco.tv* ]]; then
+        echo "Noco"
+
+        if [[ $url =~ $regexNoco ]]; then
+            n=${#BASH_REMATCH[*]}
+            id=${BASH_REMATCH[1]}
+            echo "ID : $id"
+            urlToDl=$url
+        else
+            echo "ID non trouvé."
+            continue
+        fi
+
+    else
+        echo "Site inconnu, utilisation de l'extracteur de base."
+        urlToDl=$url
+        id=$RANDOM
+    fi
+
+    if ! $playlist && ls *$id*.mp4 &> /dev/null; then
+        if ls *$id*.mp4.aria2 &> /dev/null; then
+            echo "Fichier aria2 trouvé."
+        else
+            ls -l *$id*.mp4
+            confirm La vidéo a déjà été téléchargée. Écraser ?
+            if [ $? -eq 1 ]
+            then
+                continue
+            fi
+            #rm -vi *$id*.mp4
+        fi
+    fi
+
+    videoIds+=($id)
+    videoUrls+=($urlToDl)
+
+done
+
+indexVideos=0
+
+ariaCmds=()
+
+while [ $indexVideos -lt ${#videoIds[@]} ]
+do
+    id="${videoIds[indexVideos]}"
+    urlToDl="${videoUrls[indexVideos]}"
+
+    indexVideos=$((indexVideos + 1))
+
+    echo ""
+    echo "Video $indexVideos: $id - $urlToDl"
+
+    if ! $verbose
+    then
+        echo "Downloading $urlToDl"
+    fi
+
+    if ! $setFilename
+    then
+        if $playlist
+        then
+            filename="%(upload_date)s - %(playlist)s - %(playlist_index)s - %(title)s - %(id)s.%(ext)s"
+        else
+            filename=$DEFAULTFILENAME
+        fi
+    fi
+
+    if [[ $urlToDl == *youtube* || $urlToDl == *youtu.be* ]]; then
+        youtube=true
+    else
+        youtube=false
+    fi
+
+    if [[ $urlToDl == *noco.tv* ]]; then
+        loginRequired="-n"
+    else
+        loginRequired=""
+    fi
+
+    currentQuality=$quality
+    if [[ $quality == *bestvideo+bestaudio* ]] && ! $youtube; then
+        echo "Utilisation de la qualité best"
+        currentQuality=" -f best"
+    fi
+
+    filenameOutput=$prefix$filename
+
+    cmd="youtube-dl"
+    cmd+=$start" "
+    cmd+=$end" "
+    cmd+=$currentQuality" "
+    cmd+=$speed" "
+    cmd+=$titleRegex" "
+    cmd+=$titleRegexExcl" "
+    cmd+=$verboseOption" "
+    cmd+=$listFormats" "
+    cmd+=$convertAudio" "
+    cmd+=$rawArgs" "
+    cmd+=$loginRequired" "
+    cmd+="--ignore-errors -c $restrict -o "
+    cmd+="\"$filenameOutput\""
+
+    if $useAria ; then
+        cmd=$cmd
+        cmd+=" --get-url --get-filename"
+        cmd+=" "
+        cmd+=$urlToDl
+
+        echo "Downloading with aria2"
+
+        OLDIFS=$IFS
+        IFS=$'\n' urlsAndFilenames=( $(bash -c "$cmd") )
+        IFS=$OLDIFS
+
+        cmdAria="aria2c -c --file-allocation=falloc --summary-interval=60 -x2 "
+
+        if [[ -n $speed ]]; then
+            cmdAria+="--max-download-limit=$speedNumber "
+        fi
+
+        indexAria=0
+
+        if [[ ${#urlsAndFilenames[@]} -eq 0 ]]; then
+             echo "URL introuvable."
+         fi 
+
+        while [ $indexAria -lt ${#urlsAndFilenames[@]} ]
+        do
+            outputUrl="${urlsAndFilenames[indexAria]}"
+            if [[ -n $outputUrl ]];
+            then
+                indexAria=$((indexAria + 1))
+                outputFilename="${urlsAndFilenames[indexAria]}"
+
+                echo "URL trouvé."
+                #echo "Output: $outputFilename"
+                #echo "URL: $outputUrl"
+
+                cmdAriaCurrent=$cmdAria
+                cmdAriaCurrent+="-o "
+                cmdAriaCurrent+="\"$outputFilename\""
+                cmdAriaCurrent+=" "
+                cmdAriaCurrent+="\"$outputUrl\""
+                #cmdAriaCurrent+="&"
+
+                ariaCmds+=("$cmdAriaCurrent")
+            else
+                echo "URL introuvable."
+            fi
+            indexAria=$((indexAria + 1))
+        done
+    else
+        cmd+=" "
+        cmd+=$urlToDl
+        bash -c "$cmd"
+
+        if [[ $? -eq 1 ]]
+        then
+            echo "Download may have failed."
+            continue
+        fi
+    fi
+done
+
+if $useAria; then
+    indexAria=0
+    totalAria=${#ariaCmds[@]}
+
+    while [ $indexAria -lt ${#ariaCmds[@]} ]
+    do
+        cmd="${ariaCmds[indexAria]}"
+
+        indexAria=$((indexAria + 1))
+        mod=$(($indexAria % $useAriaParallel))
+
+        if [[ $mod -eq 0 ]]; then
+            currentJob=$useAriaParallel
+        else
+            currentJob=$mod
+        fi
+        
+        jobsRunning=`jobs -p -r | wc -l`
+
+        if $verbose; then
+            jobs -r
+        fi
+
+        while [[ $jobsRunning -ge $useAriaParallel ]]; do
+            echo -e "\nJobs running: $jobsRunning/$useAriaParallel"
+            echo "Waiting to start downloading video $indexAria out of $totalAria"
+
+            sleep 60s
+
+            jobsRunning=`jobs -p -r | wc -l`
+            if $verbose; then
+                jobs -r
+            fi
+        done
+
+        echo -e "\nJobs running: $jobsRunning/$useAriaParallel"
+        echo "Starting download of video $indexAria out of $totalAria"
+        #echo "Launching command $cmd"
+
+        bash -c "$cmd"&
+    done
+
+    jobsRunning=`jobs -p | wc -l`
+    if [[ $jobsRunning -gt 0 ]]; then
+        echo -e "\nWaiting for remaining downloads to finish..."
+    fi
+    wait
+fi
+
+indexVideos=0
+
+while [ $indexVideos -lt ${#videoIds[@]} ]
+do
+    id="${videoIds[indexVideos]}"
+    urlToDl="${videoUrls[indexVideos]}"
+
+    indexVideos=$((indexVideos + 1))
+
+    if [[ -n $listFormats ]]
+    then
+        continue
+    fi
+
+    if ls *$id*.m4v &> /dev/null; then
+        rename s/m4v/mp4/ *$id*.m4v
+    fi
+
+    if $split
+    then
+        echo "Découpage de la vidéo $id..."
+        split_video *$id*mp4 $splitDuration
+    fi
+
+    if $autoradio
+    then
+        if $split
+        then
+            echo "Conversion des vidéos découpées $id..."
+            find . -maxdepth 1 -type f -name "*$id*-split-*mp4" -exec bash -c 'convert_autoradio -y "$1"' __ {} \;
+            rm -Iv *$id*mp4
+        else
+            echo "Conversion de la vidéo $id..."
+            find . -maxdepth 1 -type f -name "*$id*mp4" -exec bash -c 'convert_autoradio -y "$1"' __ {} \;
+        fi
+    fi
+done

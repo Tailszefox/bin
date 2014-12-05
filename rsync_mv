@@ -1,0 +1,39 @@
+#!/usr/bin/zsh
+
+function trash ()
+{
+        kioclient move "$@" trash:/
+}
+
+if [[ $# -lt 2 ]]; then
+    echo "Missing destination"
+    exit
+fi
+
+newArgs=""
+
+nb=0
+for arg in "$@"
+do
+    nb=$((nb + 1))
+done
+
+last=$arg
+
+nbC=0
+for arg in "$@"
+do
+    nbC=$((nbC + 1))
+    if [[ $nbC -lt $nb ]]; then
+        echo "Copying $arg to $last..."
+        rsync --progress -a "$arg" "$last"
+        if [[ $? -eq 0 ]]; then
+            echo "Trashing $arg..."
+            trash "$arg"
+            echo ""
+        else
+            echo "Error, not trashing $arg."
+            echo ""
+        fi
+    fi
+done

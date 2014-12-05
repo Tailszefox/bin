@@ -1,0 +1,180 @@
+#!/bin/bash
+
+function confirm()
+{
+    echo -n "$@ "
+    read -e answer
+    for response in y Y yes YES Yes Sure sure SURE OK ok Ok o O oui
+    do
+        if [ "_$answer" == "_$response" ]
+        then
+            return 0
+        fi
+    done
+
+    # Any answer other than the list above is considerred a "no" answer
+    return 1
+}
+
+force=false
+keep=false
+delete=false
+defaultName=true
+split=false
+splitDuration=0
+
+while getopts "o:fynkS:h" opt; do
+    case $opt in
+        o)
+            defaultName=false
+            setName=$OPTARG
+            ;;
+        f)
+            force=true
+            ;;
+        y)
+            delete=true
+            ;;
+        n)
+            keep=true
+            ;;
+        k)
+            keep=true
+            ;;
+        S)
+            split=true
+            splitDuration="$OPTARG"
+            ;;
+        h)
+            P=`basename "$0"`
+            echo "Usage: $P filename"
+            echo "  -f"
+            echo "      Efface le fichier et refait la conversion si elle a déjà été faite"
+            echo "  -y"
+            echo "      Efface le fichier original sans confirmation"
+            echo "  -n / -k"
+            echo "      Garde le fichier original sans confirmation"
+            echo "  -o [filename]"
+            echo "      Change le nom du fichier converti (même nom avec l'extension mpeg si non précisé). Non-utilisable avec plus d'un fichier"
+            echo -e "   -S secondes"
+            echo -e "       Divise la vidéo en plusieurs vidéos d'une durée de \e[1msecondes\e[0m"
+            exit 0
+    esac
+done
+
+shift $((OPTIND-1))
+
+if ! $defaultName; then 
+    if [[ $# -ge 2 ]]; then
+    echo "-o ne peut être utilisé qu'avec un seul fichier en entrée"
+    exit
+    fi
+fi
+
+if $delete && $keep; then
+    echo "-n et -y sont incompatibles !"
+    exit
+fi
+
+for f in "$@"
+do
+    echo "Converting $f"
+    filenameFull=`basename "$f"`
+
+    if $split
+    then
+        split_video "$f" $splitDuration
+        listFiles=`ls "${filenameFull%\.*}"*-split-*`
+    else
+        listFiles="$f"
+    fi
+
+    OLDIFS=$IFS
+    IFS='
+'
+
+    for filename in $listFiles
+    do
+
+        oldname=$filename
+
+        if $defaultName
+        then
+            newname=${filename%\.*}.mpeg
+        else
+            newname=$setName
+        fi
+
+        if ls "$newname" &> /dev/null; then
+            if $force
+            then
+                echo "Le fichier $newname existe déjà, effacement..."
+                rm -v "$newname"
+            else
+                echo "Le fichier $newname existe déjà, $oldname ignoré."
+                ls -l "$newname"
+                continue
+            fi
+        fi
+
+        echo "$oldname -> $newname"
+        ffmpeg_quiet "$oldname" -target ntsc-dvd -threads 4 -aspect "16:9" -b:v 256k "$newname"
+        retval=$?
+
+        if [[ $retval -ne 0 ]]; then
+            echo "Erreur : ffmpeg n'a pas quitté correctement."
+            continue
+        fi
+
+        if ! ls "$newname" &> /dev/null; then
+            echo "Erreur : fichier converti introuvable."
+            continue
+        fi
+
+        ls -lh "$oldname"
+        ls -lh "$newname"
+
+        if $delete
+        then
+            rm -vf "$oldname"
+        else
+            if $keep
+            then
+                echo "Fichier original conservé"
+            else
+                echo "Terminé."
+                ls -l "$oldname"
+                confirm "Supprimer ce fichier ?"
+
+                if [[ $? -eq 0 ]]
+                then
+                    rm -vf "$oldname"
+                fi
+            fi
+        fi
+    done
+
+    if $split
+    then
+        if $delete
+        then
+            rm -vf "$filenameFull"
+        else
+            if $keep
+            then
+                echo "Fichier original conservé"
+            else
+                echo "Terminé."
+                ls -l "$filenameFull"
+                confirm "Supprimer ce fichier ?"
+
+                if [[ $? -eq 0 ]]
+                then
+                    rm -vf "$filenameFull"
+                fi
+            fi
+        fi
+    fi
+
+    IFS=$OLDIFS
+done

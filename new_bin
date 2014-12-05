@@ -1,0 +1,20 @@
+#!/usr/bin/zsh
+
+if [ $# -eq 1 ]
+then
+    if [ ! -f ~/bin/$1 ]
+    then
+	   echo '#!/bin/bash' > ~/bin/$1
+	   echo '' >> ~/bin/$1
+	
+	   nano +3 ~/bin/$1
+	   chmod u+x ~/bin/$1
+    else
+        echo "Error: $1 already exists"
+        exit 1
+    fi
+else
+	echo "Usage: $0 name"
+	exit 1
+fi
+

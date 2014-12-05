@@ -1,0 +1,27 @@
+#!/bin/bash
+
+echo "Dual Screen Changer"
+echo "1- Enable HDMI only"
+echo "2- Enable both screens - 1920x1080"
+echo "3- Enable both screens - 1600x900"
+echo "4- Enable laptop screen only"
+echo "0- Exit"
+echo ""
+read choice
+
+if [[ $choice -eq 1 ]]; then
+    xrandr --output LVDS1 --off
+    xrandr --output HDMI1 --auto
+    echo "Screen disabled."
+elif [[ $choice -eq 2 ]]; then
+    xrandr --output HDMI1 --auto
+    xrandr --output LVDS1 --auto --pos 320x180
+    echo "Screen enabled, reopen lid."
+elif [[ $choice -eq 3 ]]; then
+    echo "Sorry :("
+elif [[ $choice -eq 4 ]]; then
+    xrandr --output HDMI1 --off
+    xrandr --output LVDS1 --auto
+else
+    exit
+fi

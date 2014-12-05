@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ $# -eq 1 ]
+then
+    file=$1
+    last=0
+    while [[ -f "$file" && $last -eq 0 ]]
+    do
+        inotifywait -e delete -e delete_self -e close_nowrite $file
+        last=$?
+    done
+    sleep 1s
+    exit $last
+else
+    echo "Usage: $0 filename"
+    exit 1
+fi
+

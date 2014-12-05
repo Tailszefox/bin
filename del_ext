@@ -1,0 +1,47 @@
+#!/bin/bash
+
+function confirm()
+{
+    echo -n "$@ "
+    read -e answer
+    for response in y Y yes YES o oui O
+    do
+        if [ "_$answer" == "_$response" ]
+        then
+            return 0
+        fi
+    done
+
+    # Any answer other than the list above is considerred a "no" answer
+    return 1
+}
+
+if [[ $# -lt 2 ]]; then
+     echo "Usage: $0 [fichiers de références] [fichiers à supprimer]"
+     exit
+fi 
+
+ref=$2
+del=$1
+
+echo "Supprimer tous les fichiers .$del en prenant comme référence les fichiers $ref."
+confirm "Confirmer ?"
+
+if [ $? -eq 1 ]
+then
+    exit
+fi
+
+echo ""
+
+find . -maxdepth 1 -type f -iname "*.$ref" -print0 | while IFS= read -r -d $'\0' line; do
+    toDel=${line%.*}.$del
+    echo "Fichier de référence : $line"
+    ls -l "$line"
+    echo "Fichier à supprimer : $toDel"
+    ls -l "$toDel"
+    rm -v "$toDel"
+    echo ""
+done
+
+#find -maxdepth 1 -name "*.$ref" -exec bash -c "f='{}'; ls \"\$f\"; ls \"\${f%.*}.$del\"; rm -rvf \"\${f%.*}.$del\"; echo " \;

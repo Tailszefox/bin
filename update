@@ -1,0 +1,14 @@
+#!/bin/bash
+
+user=`whoami`
+
+if [[ $user != "root" ]]; then
+    sudo update
+    exit
+fi
+
+apt-fast update
+apt-fast dist-upgrade
+apt-get autoclean
+apt-get autoremove
+apt-file update

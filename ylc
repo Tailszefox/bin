@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [[ $# -eq 1 ]]
+then
+	yt=$1
+else
+	yt=`xclip -o`
+fi
+
+echo $yt
+url=`youtube-dl -g "$yt"`
+vlc $url

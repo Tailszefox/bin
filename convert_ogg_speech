@@ -1,0 +1,24 @@
+#!/bin/bash
+
+for f in "$@"
+do
+    filename=/tmp/rawaudio$RANDOM.wav
+
+    echo "Converting $f to $filename"
+
+    if [[ $f == *.ogg || $f == *.mp3 ]]
+    then
+        echo "Audio"
+        sox "$f" -r 22050 -t wav -S "$filename"
+    else
+        echo "Video"
+        ffmpeg_quiet "$f" -ar 22050 "$filename"
+    fi
+
+    echo "Converting to OGG"
+    oggenc -q 0 --resample 22050 --downmix --advanced-encode-option lowpass_frequency=6 "$filename" -o "${f%.*}.ogg"
+
+    rm $filename
+    ls -lh "$f"
+    ls -lh "${f%.*}.ogg"
+done

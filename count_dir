@@ -1,0 +1,4 @@
+#!/bin/bash
+
+for f in *; do [ -d ./"$f" ] && find ./"$f" -type f -exec echo \; | wc -l | tr -d '\n' && echo " files in directory $f"; done
+

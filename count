@@ -1,0 +1,24 @@
+#!/bin/bash
+
+recursive=false
+
+while getopts "rh" opt; do
+    case $opt in
+        r)
+            recursive=true
+            ;;
+        h)
+            echo "  -r"
+            echo "      Recursive"
+            exit 0
+            ;;
+    esac
+done
+
+if $recursive; then
+    maxdepth=""
+else
+    maxdepth="-maxdepth 1"
+fi
+
+find . $maxdepth -type f -printf "%f\n" | egrep --invert-match '^\.' | rev | cut -d . -f1 | rev | sort | uniq -ic | sort -rn

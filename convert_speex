@@ -1,0 +1,24 @@
+#!/bin/bash
+
+for f in "$@"
+do
+    filename=/tmp/rawaudio$RANDOM.wav
+
+    echo "Converting $f to $filename"
+
+    if [[ $f == *.ogg || $f == *.mp3 ]]
+    then
+        echo "Audio"
+        sox "$f" -r 16k -t wav -S "$filename"
+    else
+        echo "Video"
+        ffmpeg_quiet "$f" -ar 16000 "$filename"
+    fi
+
+    echo "Converting to spx"
+    speexenc -w --quality 8 --vad --dtx "$filename" "${f%.*}.spx"
+
+    rm $filename
+    ls -lh "$f"
+    ls -lh "${f%.*}.spx"
+done

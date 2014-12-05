@@ -1,0 +1,36 @@
+#!/bin/bash
+
+trap "exit;" SIGINT SIGTERM
+
+set -x
+
+MAX_RETRIES=10
+i=0
+
+url="$@"
+output=`basename $url`
+returned=2
+
+while [ $returned -eq 2 -a $i -lt $MAX_RETRIES ]
+do
+    i=$(($i+1))
+
+    rtmpdump --resume -o $output -r $url
+    returned=$?
+
+    if [[ $returned -eq 0 ]]
+    then
+        echo "Video downloaded. Converting..."
+        
+        convert_mp4 -o ${output%\.*}_new.mp4 -n $output
+        echo "Done."
+        exit
+    elif [[ $returned -eq 1 ]]
+    then
+        echo "Fatal error."
+        exit
+    else
+        echo "Temporary error, waiting..."
+        sleep 1m
+    fi
+done

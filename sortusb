@@ -1,0 +1,49 @@
+#!/bin/bash
+
+function confirm()
+{
+    echo -n "$@ "
+    read -e answer
+    for response in y Y o O
+    do
+        if [ "_$answer" == "_$response" ]
+        then
+            return 0
+        fi
+    done
+    return 1
+}
+
+if [[ $# -lt 1 ]]; then
+    dev=`readlink -e /dev/disk/by-id/usb-*-part1`
+    mount=`grep "^$dev " /proc/mounts | cut -d " " -f 2`
+else
+    mount="$1"
+    dev=`grep " $mount " /proc/mounts | cut -d " " -f 1`
+fi
+
+echo "The following disk will be sorted:"
+echo "$mount => $dev"
+
+confirm OK?
+if [ $? -eq 1 ]
+then
+    exit
+fi
+
+lsof $mount
+fuser $mount
+
+echo "Sleeping..."
+sleep 5s
+
+umount -v $mount
+
+lsof $dev
+fuser $dev
+
+echo "Press Enter when device is unmounted."
+read z
+
+fatsort $dev
+#sudo fatsort -l $dev
