@@ -20,8 +20,9 @@ force=false
 keep=false
 defaultName=true
 directory=false
+suffix=false
 
-while getopts "o:yndh" opt; do
+while getopts "o:yndsh" opt; do
     case $opt in
         o)
             defaultName=false
@@ -36,6 +37,9 @@ while getopts "o:yndh" opt; do
         d)
             directory=true
             ;;
+        s)
+            suffix=true
+            ;;
         h)
             P=`basename "$0"`
             echo "Usage: $P filename"
@@ -47,6 +51,8 @@ while getopts "o:yndh" opt; do
             echo "      Place le fichier dans un sous dossier plutôt que dans le dossier du fichier source"
             echo "  -o [filename]"
             echo "      Change le nom du fichier converti (même nom avec l'extension mp4 si non précisé). Non-utilisable avec plus d'un fichier"
+            echo "  -s"
+            echo "      Ajoute un suffixe au nom de la vidéo (_new.mp4)"
             exit 0
     esac
 done
@@ -73,7 +79,12 @@ do
 
     if $defaultName
     then
-        newname=${filename%\.*}.mp4
+        if $suffix
+        then
+            newname=${filename%\.*}_new.mp4
+        else
+            newname=${filename%\.*}.mp4
+        fi
     else
         newname=$setName
     fi
