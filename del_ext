@@ -35,7 +35,7 @@ fi
 echo ""
 
 find . -maxdepth 1 -type f -iname "*.$ref" -print0 | while IFS= read -r -d $'\0' line; do
-    toDel=${line%.*}.$del
+    toDel=${line/.$ref/.$del}
     echo "Fichier de référence : $line"
     ls -l "$line"
     echo "Fichier à supprimer : $toDel"
