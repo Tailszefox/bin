@@ -143,7 +143,7 @@ while getopts ":s:e:l:r:x:p:f:o:vbaFRCAUP:S:Y:h" opt; do
             P=`basename "$0"`
             echo -e "Usage: $P [options] URL"
             echo -e "   -U"
-            echo -e "       Ne pas limiter la vitesse de téléchargement (défaut: limité à DEFAULTLIMIT)"
+            echo -e "       Ne pas limiter la vitesse de téléchargement (défaut: limité à $DEFAULTLIMIT)"
             echo -e "   -l limite"
             echo -e "       Limitation de la vitesse de download à \e[1mlimite\e[0m (implique -P 1)"
             echo -e "   -s numéro"
@@ -209,6 +209,7 @@ fi
 shift $((OPTIND-1))
 
 playlist=false
+regexYouTubeId="^([-_a-zA-Z0-9]{11})$"
 regexYouTube="(.*)(v=|embed/|.be/)(.{11})(.*)"
 regexYouTubePlaylist="(.*)playlist\?list=([A-Za-z0-9_\-]*)(.*)"
 regexYouTubeUser="(.*)/user/([A-Za-z0-9_\-]*)(.*)"
@@ -225,7 +226,15 @@ do
     echo ""
     echo $url
 
-    if [[ $url == *youtube* || $url == *youtu.be* ]]; then
+    if [[ $url =~ $regexYouTubeId ]]; then
+        echo "YouTube ID"
+
+        n=${#BASH_REMATCH[*]}
+        id=${BASH_REMATCH[1]}
+        echo "ID : $id"
+        urlToDl="https://www.youtube.com/watch?v=$id"
+
+    elif [[ $url == *youtube* || $url == *youtu.be* ]]; then
         echo "YouTube"
 
         if [[ $url =~ $regexYouTube ]]; then
@@ -428,6 +437,11 @@ do
     if [[ $quality == *bestvideo+bestaudio* ]] && ! $youtube; then
         echo "Utilisation de la qualité best"
         currentQuality=" -f best"
+    fi
+
+    if [[ $quality == *bestvideo+bestaudio* ]] && $youtube; then
+        echo "Limitation de la qualité maximale à 720p"
+        currentQuality=" -f bestvideo+bestaudio --max-quality 298 "
     fi
 
     filenameOutput=$prefix$filename
