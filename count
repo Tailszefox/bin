@@ -27,7 +27,7 @@ dirs=()
 if $summary; then
     for dir in ./*; do
         if [[ -d "$dir" ]]; then
-            dirs+=($dir)
+            dirs+=("$dir")
         fi
     done
 # Else, add only the current directory
@@ -43,5 +43,5 @@ fi
 
 for dir in "${dirs[@]}"; do
     echo $dir
-    find $dir $maxdepth -type f -printf "%f\n" | egrep --invert-match '^\.' | rev | cut -d . -f1 | rev | sort | uniq -ic | sort -rn
+    find "$dir" $maxdepth -type f -printf "%f\n" | egrep --invert-match '^\.' | rev | cut -d . -f1 | rev | sort | uniq -ic | sort -rn
 done
