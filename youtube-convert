@@ -217,7 +217,7 @@ regexYouTubeChannel="(.*)/channel/([A-Za-z0-9_\-]*)(.*)"
 regexDaily="(.*)video/([a-z0-9]{6,7})(.*)"
 regexVimeo="(.*)vimeo\.com/([0-9]{7,})(.*)"
 regexBlip="(.*)-([0-9]*)$"
-regexEscapist="(.*)/([0-9]{4})-(.*)"
+regexEscapist="(.*)/([0-9]{4,5})-(.*)"
 regexViddler=".*/embed/(\w+)/.*"
 regexNoco=".*/emission/([0-9]+)/.*"
 
