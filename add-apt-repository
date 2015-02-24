@@ -10,7 +10,7 @@ echo PPA Name : $ppaName
 
 sudo /usr/bin/add-apt-repository $@
 
-read -e -p "Enter distribution name: " -i "saucy" name
+read -e -p "Enter distribution name: " -i "utopic" name
 
 echo "Before change"
 cat /etc/apt/sources.list.d/*$ppaName*.list
