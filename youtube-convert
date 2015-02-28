@@ -48,7 +48,7 @@ unlimited=-1
 titleRegex=""
 titleRegexExcl=""
 prefix=""
-quality=" -f bestvideo+bestaudio"
+quality=" -f bestvideo[ext=mp4]+bestaudio"
 listFormats=""
 verbose=false
 verboseOption=""
@@ -195,7 +195,7 @@ fi
 
 echo "Youtube-Convert"
 
-if [[ $quality == *bestvideo+bestaudio* ]] && $useAria; then
+if [[ $quality == *bestvideo*+bestaudio* ]] && $useAria; then
     echo "Utilisation d'aria : limitation de la qualité maximale"
     quality=" --max-quality 100"
 fi
@@ -434,14 +434,14 @@ do
     fi
 
     currentQuality=$quality
-    if [[ $quality == *bestvideo+bestaudio* ]] && ! $youtube; then
+    if [[ $quality == *bestvideo*+bestaudio* ]] && ! $youtube; then
         echo "Utilisation de la qualité best"
         currentQuality=" -f best"
     fi
 
-    if [[ $quality == *bestvideo+bestaudio* ]] && $youtube; then
+    if [[ $quality == *bestvideo*+bestaudio* ]] && $youtube; then
         echo "Limitation de la qualité maximale à 720p"
-        currentQuality=" -f bestvideo+bestaudio --max-quality 298 "
+        currentQuality=" -f bestvideo[ext=mp4]+bestaudio --max-quality 298 "
     fi
 
     filenameOutput=$prefix$filename
