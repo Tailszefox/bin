@@ -45,5 +45,5 @@ fuser $dev
 echo "Press Enter when device is unmounted."
 read z
 
-fatsort $dev
+sudo fatsort $dev
 #sudo fatsort -l $dev
