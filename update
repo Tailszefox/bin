@@ -7,8 +7,9 @@ if [[ $user != "root" ]]; then
     exit
 fi
 
-apt-fast update
-apt-fast dist-upgrade
+aptitude update
+aptitude safe-upgrade
+aptitude full-upgrade
 apt-get autoclean
 apt-get autoremove
 apt-file update
