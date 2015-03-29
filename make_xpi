@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [[ $# -eq 0 ]]
+then
+	echo "Usage: $0 ./folder"
+	exit
+fi
+
+dir=`readlink -f "$1"`
+
+if [[ ! -d $dir ]]
+then
+	echo "$dir is not a directory."
+	exit
+fi
+
+if [[ ! -f $dir/install.rdf ]]
+then
+	echo "install.rdf not found, the xpi won't work."
+	exit
+fi
+
+filename=${dir%/}.xpi
+
+if [[ -f $filename ]]
+then
+	rm -i $filename
+fi
+
+cd $dir
+
+echo "Creating $filename from $dir..."
+
+zip -q -r $filename .
