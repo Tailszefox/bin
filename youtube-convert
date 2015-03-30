@@ -440,8 +440,8 @@ do
     fi
 
     if [[ $quality == *bestvideo*+bestaudio* ]] && $youtube; then
-        echo "Limitation de la qualité maximale à 720p"
-        currentQuality=" -f bestvideo[ext=mp4]+bestaudio --max-quality 298 "
+        echo "YouTube : ajout de conditions supplémentaires"
+        currentQuality=' -f "bestvideo[height<=720][ext=mp4]+bestaudio"'
     fi
 
     filenameOutput=$prefix$filename
