@@ -15,7 +15,7 @@ read -e -p "Enter distribution name: " -i "utopic" name
 echo "Before change"
 cat /etc/apt/sources.list.d/*$ppaName*.list
 
-sudo sed -i "s/debian/$name/g" /etc/apt/sources.list.d/*$ppaName*.list
+sudo sed -i "s/jessie/$name/g" /etc/apt/sources.list.d/*$ppaName*.list
 
 echo "After change"
 cat /etc/apt/sources.list.d/*$ppaName*.list
