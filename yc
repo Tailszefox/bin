@@ -2,7 +2,8 @@ url=`xclip -o`
 
 url=$(tr -dc '[[:print:]]' <<< "$url")
 url="$(echo "$url" | sed -e 's/[()&]/\\&/g')"
-sed -i.bak 's%;yc$%;youtube-convert "'$url'"%g' $HISTFILE
+url="$(echo "$url" | sed -e 's/\([^ ]\+\)/"\1"/g')"
+sed -i.bak 's%;yc$%;youtube-convert '$url'%g' $HISTFILE
 fc -R
 cd ~/Bureau/offline
-youtube-convert "$url"
+youtube-convert $url
