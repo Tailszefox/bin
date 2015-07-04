@@ -212,6 +212,7 @@ fi
 shift $((OPTIND-1))
 
 playlist=false
+
 regexYouTubeId="^([-_a-zA-Z0-9]{11})$"
 regexYouTube="(.*)(v=|embed/|.be/)(.{11})(.*)"
 regexYouTubePlaylist="(.*)playlist\?list=([A-Za-z0-9_\-]*)(.*)"
@@ -228,6 +229,14 @@ for url in $@
 do
     echo ""
     echo $url
+
+    if [[ $url == *://t.co/* ]]; then
+        echo "Résolution de l'URL..."
+        
+        url=`curl -i $url | grep -i Location | cut -d ' ' -f 2`
+        echo "URL trouvé : $url"
+        echo ""
+    fi
 
     if [[ $url =~ $regexYouTubeId ]]; then
         echo "YouTube ID"
