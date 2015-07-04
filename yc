@@ -1,11 +1,5 @@
 url=`xclip -o`
 
-if [[ $url == *://t.co/* ]]; then
-    echo "Fetching real URL..."
-
-    url=`curl -i $url | grep -i Location | cut -d ' ' -f 2`
-fi
-
 url=$(tr -dc '[[:print:]]' <<< "$url")
 url="$(echo "$url" | sed -e 's/[()&]/\\&/g')"
 sed -i.bak 's%;yc$%;youtube-convert "'$url'"%g' $HISTFILE
