@@ -31,10 +31,14 @@ else:
 # Get Pidgin
 try:
     pidgin = bus.get_object("im.pidgin.purple.PurpleService", "/im/pidgin/purple/PurpleObject")
+    pidginStatuses = {}
 
-    # Get ID of current status for Pidgin so we can change it correctly
-    pidginMethodCurrent = pidgin.get_dbus_method("PurpleSavedstatusGetCurrent", "im.pidgin.purple.PurpleInterface")
-    currentPidginStatus = pidginMethodCurrent()
+    # Get list of statuses for Pidgin so we can change it correctly
+    pidginMethodGetAll = pidgin.get_dbus_method("PurpleSavedstatusesGetAll", "im.pidgin.purple.PurpleInterface")
+    pidginMethodGetTitle = pidgin.get_dbus_method("PurpleSavedstatusGetTitle", "im.pidgin.purple.PurpleInterface")
+    for status in pidginMethodGetAll():
+        title = str(pidginMethodGetTitle(status))
+        pidginStatuses[title] = status
 except Exception as e:
     print "Error while getting Pidgin: {}".format(e)
     pidgin = None
@@ -56,7 +60,7 @@ if isOnline:
 
     if(pidgin is not None):
         pidginMethod = pidgin.get_dbus_method("PurpleSavedstatusActivate", "im.pidgin.purple.PurpleInterface")
-        pidginMethod(currentPidginStatus + 2)
+        pidginMethod(pidginStatuses["Away"])
 else:
     skypeMethod("SET USERSTATUS ONLINE")
 
@@ -66,4 +70,4 @@ else:
 
     if(pidgin is not None):
         pidginMethod = pidgin.get_dbus_method("PurpleSavedstatusActivate", "im.pidgin.purple.PurpleInterface")
-        pidginMethod(currentPidginStatus - 2)
+        pidginMethod(pidginStatuses["Available"])
