@@ -3,7 +3,7 @@
 user=`whoami`
 
 if [[ $user != "root" ]]; then
-    sudo update
+    sudo /home/tails/bin/update
     exit
 fi
 
