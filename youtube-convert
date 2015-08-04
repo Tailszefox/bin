@@ -171,7 +171,7 @@ while getopts ":s:e:l:r:x:p:f:o:vbaFRCAUP:S:Y:h" opt; do
             echo -e "   -R"
             echo -e "       Ne pas limiter le nom du fichier aux caractères ASCII"
             echo -e "   -C"
-            echo -e "       Conversion de la vidéo en fichier audio (implique -A)"
+            echo -e "       Conversion de la vidéo en fichier audio"
             echo -e "   -A"
             echo -e "       Utiliser aria2 pour télécharger la vidéo"
             echo -e "   -P chiffre"
