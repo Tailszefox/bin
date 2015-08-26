@@ -1,0 +1,30 @@
+#!/bin/bash
+
+missingFiles=`cmake "$@"  2>&1 | grep "    .*\.cmake$"`
+
+if [[ -z $missingFiles ]]; then
+    echo "No missing files found"
+    exit
+fi
+
+echo "The following files are missing:"
+echo $missingFiles
+
+echo ""
+echo "Searching..."
+
+missingPackages=`~/bin/apt_file $missingFiles | grep -oP "^[^:]+" `
+
+if [[ -z $missingPackages ]]; then
+    echo "Failed to find packages"
+    exit
+fi
+
+echo "The following packages were found:"
+echo $missingPackages
+
+missingPackages=`echo $missingPackages | tr '\n' ' '`
+
+echo ""
+echo "Installing..."
+sudo aptitude install $missingPackages
