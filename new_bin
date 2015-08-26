@@ -7,7 +7,7 @@ then
 	   echo '#!/bin/bash' > ~/bin/$1
 	   echo '' >> ~/bin/$1
 	
-	   nano +3 ~/bin/$1
+	   subl ~/bin/${1}:3
 	   chmod u+x ~/bin/$1
     else
         echo "Error: $1 already exists"
@@ -17,4 +17,3 @@ else
 	echo "Usage: $0 name"
 	exit 1
 fi
-
