@@ -61,12 +61,13 @@ useAria=false
 useAriaParallel=4
 split=false
 splitDuration=0
+ignoreExisting=false
 rawArgs=""
 
 videoIds=()
 videoUrls=()
 
-while getopts ":s:e:l:r:x:p:f:o:vbaFRCAUP:S:Y:h" opt; do
+while getopts ":s:e:l:r:x:p:f:o:vbaiFRCAUP:S:Y:h" opt; do
     case $opt in
         l)
             speed=" -r $OPTARG"
@@ -97,6 +98,9 @@ while getopts ":s:e:l:r:x:p:f:o:vbaFRCAUP:S:Y:h" opt; do
             quality=' -f "best[height<=360][ext=mp4]"'
             split=true
             splitDuration="1800"
+            ;;
+        i)
+            ignoreExisting=true
             ;;
         s)
             start=" --playlist-start $OPTARG"
@@ -164,6 +168,8 @@ while getopts ":s:e:l:r:x:p:f:o:vbaFRCAUP:S:Y:h" opt; do
             echo -e "       Conversion pour l'autoradio"
             echo -e "   -p prefixe"
             echo -e "       Rajoute \e[1mprefix\e[0m au nom de fichier"
+            echo -e "   -i"
+            echo -e "       Ignore les vidéos déjà existantes"
             echo -e "   -F"
             echo -e "       Liste les formats disponibles"
             echo -e "   -o format"
@@ -390,12 +396,17 @@ do
             echo "Fichier aria2 trouvé."
         else
             ls -l *$id*.mp4
-            confirm La vidéo a déjà été téléchargée. Écraser ?
-            if [ $? -eq 1 ]
-            then
+            if $ignoreExisting; then
+                echo "La vidéo a été ignorée car elle existe déjà..."
                 continue
+            else
+                confirm La vidéo a déjà été téléchargée. Écraser ?
+                if [ $? -eq 1 ]
+                then
+                    continue
+                fi
+                #rm -vi *$id*.mp4
             fi
-            #rm -vi *$id*.mp4
         fi
     fi
 
