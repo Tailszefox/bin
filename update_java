@@ -1,0 +1,33 @@
+#!/bin/bash
+
+downloadPage=`curl -s -L http://www.oracle.com/technetwork/java/javase/downloads/index.html | grep -E --only-matching "/technetwork/java/javase/downloads/jdk8-downloads-([0-9]*).html" | head -1`
+
+fileUrl=`curl -s -L "http://www.oracle.com/$downloadPage" | grep -E --only-matching "http://download.oracle.com/otn-pub/java/jdk/8u(\w+)-(\w+)/jdk-8u(\w+)-linux-x64.tar.gz" | head -1`
+
+regexVersion="8u([0-9]+)"
+[[ $fileUrl =~ $regexVersion ]]
+availableVersion="${BASH_REMATCH[1]}"
+
+javaVersion=`java -version 2>&1 | grep version`
+regexCurrentVersion="_([0-9]+)"
+[[ $javaVersion =~ $regexCurrentVersion ]]
+currentVersion="${BASH_REMATCH[1]}"
+
+echo "Current version: $currentVersion"
+echo "Available version: $availableVersion"
+
+if [[ $currentVersion -eq $availableVersion ]]; then
+    echo "No update needed"
+    exit
+fi
+
+wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" $fileUrl
+
+echo "Making deb..."
+make-jpkg jdk-8u*-linux-x64.tar.gz
+
+echo "Installing deb..."
+sudo dpkg -i oracle-java8-jdk_8u*_amd64.deb
+
+echo "Done, cleaning up"
+rm jdk-8u*-linux-x64.tar.gz oracle-java8-jdk_8u*_amd64.deb
