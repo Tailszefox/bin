@@ -1,0 +1,91 @@
+#!/bin/bash
+
+user=`whoami`
+
+if [[ $user != "root" ]]; then
+    echo "Running $0 as root..."
+    sudo $0
+    exit
+fi
+
+read -e -p "Path to new chroot: /chroot/" path
+
+mkdir -p /chroot/$path
+
+read -e -p "Distribution to use: " -i "jessie" distribution
+
+debootstrap --arch amd64 $distribution /chroot/$path "http://httpredir.debian.org/debian"
+
+mkdir /chroot/$path/media/olddd
+
+cd /chroot/$path/usr/sbin
+
+cat > ./policy-rc.d <<EOF
+#!/bin/sh
+exit 101
+EOF
+chmod a+x ./policy-rc.d
+
+cd /chroot/$path/root/
+
+mkdir -p ./bin
+
+cat > ./.zshrc <<EOF
+# Lines configured by zsh-newuser-install
+HISTFILE=~/.histfile
+HISTSIZE=1000
+SAVEHIST=1000
+
+bindkey -e
+# End of lines configured by zsh-newuser-install
+# The following lines were added by compinstall
+
+autoload -U compinit
+compinit -u
+zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin /usr/X11R6/bin /usr/games
+zstyle ':completion:*' use-cache ons
+zstyle ':completion:*' cache-path ~/.zsh/cache
+#zstyle ':completion:*:descriptions' format '%U%B%d%b%u'
+#zstyle ':completion:*:warnings' format '%BSorry, no matches for: %d%b'
+
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*:descriptions' format '%U%B%d%b%u'
+zstyle ':completion:*:messages' format '%d'
+zstyle ':completion:*:warnings' format '%BSorry, no matches for: %d%b'
+zstyle ':completion:*:corrections' format '%B%d (errors: %e)%b'
+zstyle ':completion:*:matches' group 'yes'  
+zstyle ':completion:*' group-name ''
+
+zstyle ':completion:*:processes' command 'ps -ax'
+zstyle ':completion:*:processes-names' command 'ps -aeo comm='
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+zstyle ':completion:*:*:killall:*:processes-names' list-colors '=(#b) #([0-9]#)*=0=01;31'
+
+autoload -U promptinit
+promptinit
+PROMPT="%K{red}%n@%m-%K{green}chroot-$path%k %B%F{cyan}%(4~|...|)%3~%F{white} %# %b%f%k"
+
+setopt auto_cd
+setopt hist_ignore_all_dups
+setopt SHARE_HISTORY
+#setopt correctall
+#setopt correct_all
+setopt BRACE_CCL
+unsetopt beep
+
+export PATH="/root/bin/:$PATH"
+
+alias ls="ls --color=auto"
+alias rsync_cp="rsync --progress -a"
+alias apt_show="apt-cache show"
+alias apt_policy="apt-cache policy"
+alias apt_search="apt-cache search"
+alias apt_file="apt-file search"
+EOF
+
+chroot /chroot/$path /bin/bash -c "dpkg-divert --divert /usr/bin/ischroot.debianutils --rename /usr/bin/ischroot"
+chroot /chroot/$path /bin/bash -c "ln -s /bin/true /usr/bin/ischroot"
+chroot /chroot/$path /bin/bash -c "apt-get install -y aptitude locales-all zsh git"
+chroot /chroot/$path /bin/bash -c "chsh -s /usr/bin/zsh"
+
+/home/tails/bin/chroot $path
