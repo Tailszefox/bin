@@ -20,6 +20,12 @@ if [[ $# -lt 1 ]]; then
 else
     mount="$1"
     dev=`grep " $mount " /proc/mounts | cut -d " " -f 1`
+    shift 1
+fi
+
+if [[ -z $dev ]]; then
+    echo "No mountpoint found, aborting"
+    exit
 fi
 
 echo "The following disk will be sorted:"
@@ -45,5 +51,5 @@ fuser $dev
 echo "Press Enter when device is unmounted."
 read z
 
-sudo fatsort $dev
+sudo fatsort $@ $dev
 #sudo fatsort -l $dev
