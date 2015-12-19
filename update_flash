@@ -1,0 +1,6 @@
+#!/bin/bash
+
+sudo update-flashplugin-nonfree --status
+sudo update-flashplugin-nonfree --install --verbose
+sudo update-pepperflashplugin-nonfree --status
+sudo update-pepperflashplugin-nonfree --install --verbose
