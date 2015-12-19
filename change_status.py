@@ -3,6 +3,7 @@
 
 import dbus
 import sys
+import subprocess
 
 bus = dbus.SessionBus()
 
@@ -50,6 +51,15 @@ except Exception as e:
     print "Error while getting Konversation : {}".format(e)
     konversation = None
 
+# Get Steam
+# "steam://friends/status/away" 
+# "steam://friends/status/online"
+output = subprocess.check_output(["ps", "-e"])
+if 'steam' in output:
+    steam = True
+else:
+    steam = None
+
 # Change the status
 if isOnline:
     skypeMethod("SET USERSTATUS AWAY")
@@ -61,6 +71,10 @@ if isOnline:
     if(pidgin is not None):
         pidginMethod = pidgin.get_dbus_method("PurpleSavedstatusActivate", "im.pidgin.purple.PurpleInterface")
         pidginMethod(pidginStatuses["Away"])
+
+    if(steam is not None):
+        subprocess.call(["steam", "steam://friends/status/away"])
+
 else:
     skypeMethod("SET USERSTATUS ONLINE")
 
@@ -71,3 +85,6 @@ else:
     if(pidgin is not None):
         pidginMethod = pidgin.get_dbus_method("PurpleSavedstatusActivate", "im.pidgin.purple.PurpleInterface")
         pidginMethod(pidginStatuses["Available"])
+
+    if(steam is not None):
+        subprocess.call(["steam", "steam://friends/status/online"])
