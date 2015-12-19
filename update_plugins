@@ -1,0 +1,10 @@
+#!/bin/bash
+
+sudo pipelight-plugin --update
+sudo pipelight-plugin --create-mozilla-plugins
+
+echo ""
+update_flash
+
+echo ""
+update_java
