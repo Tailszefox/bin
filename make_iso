@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $0 [files]"
+    exit
+fi
+
+genisoimage -input-charset "iso8859-1" -o $1.iso "$@"
+echo  "Created $1.iso"
