@@ -34,6 +34,9 @@ if [[ $recordedDate -ne currentDate ]]; then
     # Delete all screenshots from yesterday
     find -maxdepth 1 -name "$recordedDate-*.jpg" -delete
 
+    # Delete old videos
+    find ./videos -maxdepth 1 -name "*.mp4" -ctime +7 -delete
+
     echo $currentDate > ./date
     exit
 fi
