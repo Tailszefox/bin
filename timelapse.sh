@@ -32,7 +32,7 @@ if [[ $recordedDate -ne currentDate ]]; then
     echo "" > ./log
 
     # Delete all screenshots from yesterday
-    find -maxdepth 1 -name "$recordedDate-*.jpg" -print -delete
+    find -maxdepth 1 -name "$recordedDate-*.jpg" -delete
 
     echo $currentDate > ./date
     exit
