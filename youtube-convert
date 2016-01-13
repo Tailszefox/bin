@@ -62,12 +62,14 @@ useAriaParallel=4
 split=false
 splitDuration=0
 ignoreExisting=false
+increment=false
+incrementValue=""
 rawArgs=""
 
 videoIds=()
 videoUrls=()
 
-while getopts ":s:e:l:r:x:p:f:o:vbaiFRCAUP:S:Y:h" opt; do
+while getopts ":s:e:l:r:x:p:f:o:vbaiIFRCAUP:S:Y:h" opt; do
     case $opt in
         l)
             speed=" -r $OPTARG"
@@ -117,6 +119,10 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiFRCAUP:S:Y:h" opt; do
             ;;
         p)
             prefix="$OPTARG"
+            ;;
+        I)
+            increment=true
+            incrementValue=0
             ;;
         F)
             listFormats=" --list-formats"
@@ -168,6 +174,8 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiFRCAUP:S:Y:h" opt; do
             echo -e "       Conversion pour l'autoradio"
             echo -e "   -p prefixe"
             echo -e "       Rajoute \e[1mprefix\e[0m au nom de fichier"
+            echo -e "   -I"
+            echo -e "       Ajoute un nombre auto-incrémenté au début du nom de fichier"
             echo -e "   -i"
             echo -e "       Ignore les vidéos déjà existantes"
             echo -e "   -F"
@@ -468,6 +476,12 @@ do
     fi
 
     filenameOutput=$prefix$filename
+
+    if $increment ; then
+        (( incrementValue++ ))
+        printf -v incrementValueFull "%03d" $incrementValue
+        filenameOutput="$incrementValueFull - $filenameOutput"
+    fi
 
     cmd="youtube-dl"
     cmd+=$start" "
