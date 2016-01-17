@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Prints photos on 10x15cm paper with the proper aspect ratio and cropping
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $0 [path to images]"
+    exit
+fi
+
+printer=$(lpstat -a | cut -d ' ' -f 1)
+
+for i in "$@";
+do
+    filename=$(basename "$i")
+    copyPath="/tmp/$filename"
+
+    echo "Treating $filename"
+    cp "$i" "$copyPath"
+
+    # Remove EXIF data
+    mogrify -strip "$copyPath"
+
+    # Rotate to portrait
+    mogrify -rotate 90 "$copyPath"
+
+    # Get width and height
+    width=$(identify -ping -format '%w' "$copyPath")
+    height=$(identify -ping -format '%h' "$copyPath")
+
+    # Calculate desired height to respect aspect ratio
+    newHeight=$(( ($width*3)/2 ))
+
+    # Crop image
+    mogrify -gravity "center" -crop ${width}x${newHeight}+0+0 +repage "$copyPath"
+
+    # Print
+    lp -o media=4x6.bl,glossypaper "$copyPath"
+done
