@@ -64,12 +64,13 @@ splitDuration=0
 ignoreExisting=false
 increment=false
 incrementValue=""
+subtitles=""
 rawArgs=""
 
 videoIds=()
 videoUrls=()
 
-while getopts ":s:e:l:r:x:p:f:o:vbaiIFRCAUP:S:Y:h" opt; do
+while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
     case $opt in
         l)
             speed=" -r $OPTARG"
@@ -122,7 +123,19 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiIFRCAUP:S:Y:h" opt; do
             ;;
         I)
             increment=true
-            incrementValue=0
+
+            case $OPTARG in
+                # Utilisation de la valeur par défaut
+                ''|*[!0-9]*)
+                    incrementValue=1
+                    ((OPTIND--))
+                    continue
+                    ;;
+                # Utilisation de la valeur demandée
+                *)
+                    incrementValue=$OPTARG
+                    ;;
+            esac
             ;;
         F)
             listFormats=" --list-formats"
@@ -147,6 +160,9 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiIFRCAUP:S:Y:h" opt; do
         S)
             split=true
             splitDuration="$OPTARG"
+            ;;
+        W)
+            subtitles=" --all-subs"
             ;;
         Y)
             rawArgs=" $OPTARG"
@@ -174,8 +190,8 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiIFRCAUP:S:Y:h" opt; do
             echo -e "       Conversion pour l'autoradio"
             echo -e "   -p prefixe"
             echo -e "       Rajoute \e[1mprefix\e[0m au nom de fichier"
-            echo -e "   -I"
-            echo -e "       Ajoute un nombre auto-incrémenté au début du nom de fichier"
+            echo -e "   -I [start]"
+            echo -e "       Ajoute un nombre auto-incrémenté au début du nom de fichier. Démarre à \e[1mstart\e[0m si précisé."
             echo -e "   -i"
             echo -e "       Ignore les vidéos déjà existantes"
             echo -e "   -F"
@@ -192,6 +208,8 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiIFRCAUP:S:Y:h" opt; do
             echo -e "       Télécharge \e[1mchiffre\e[0m vidéos en parallèle avec aria (implique -A)"
             echo -e "   -S secondes"
             echo -e "       Divise la vidéo en plusieurs vidéos d'une durée de \e[1msecondes\e[0m"
+            echo -e "   -W"
+            echo -e "       Télécharge les sous-titres avec la vidéo"
             echo -e "   -Y arguments"
             echo -e "       Passe \e[1marguments\e[0m à youtube-dl"
             echo -e "   -v"
@@ -478,9 +496,9 @@ do
     filenameOutput=$prefix$filename
 
     if $increment ; then
-        (( incrementValue++ ))
         printf -v incrementValueFull "%03d" $incrementValue
         filenameOutput="$incrementValueFull - $filenameOutput"
+        (( incrementValue++ ))
     fi
 
     cmd="youtube-dl"
@@ -493,6 +511,7 @@ do
     cmd+=$verboseOption" "
     cmd+=$listFormats" "
     cmd+=$convertAudio" "
+    cmd+=$subtitles" "
     cmd+=$rawArgs" "
     cmd+=$loginRequired" "
     cmd+="--ignore-errors -c $restrict -o "
