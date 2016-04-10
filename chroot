@@ -23,11 +23,11 @@ if [[ ! -d "/chroot/$chroot" ]]; then
     exit
 fi
 
-if mountpoint -q "/chroot/$chroot/media/olddd"; then
-    echo "olddd already mounted"
-else
-    mount /dev/sdb1 /chroot/$chroot/media/olddd
-fi
+#if mountpoint -q "/chroot/$chroot/media/olddd"; then
+#    echo "olddd already mounted"
+#else
+#    mount /dev/sdb1 /chroot/$chroot/media/olddd
+#fi
 
 if mountpoint -q "/chroot/$chroot/dev/pts"; then
 	echo "pts already mounted"
