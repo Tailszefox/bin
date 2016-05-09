@@ -1,8 +1,8 @@
 bin
 ===
 
-Ce dépôt contient plusieurs scripts, la plupart en Bash, me servant à simplifier ou automatiser certaines tâches.
+In this repository, you'll find a bunch of scripts I've written that I use to make my life easier. Most of them are written in Bash.
 
-Il y en a des utiles et des moins utiles. Certains ont été écrits à l'arrache, d'autres sont un peu plus développés. Ils fonctionnent tous sur ma machine, mais il n'y a eu aucune précaution prise pour les rendre compatibles et portables. Ils sont avant tout destinés à mon usage personnel.
+There are some I use daily, and some I only used a few times. Some are pretty complex, while some others were written in a few minutes. They all work on my machine, but there's no guarantee they'll work on yours, as they were not written to be portable or compatible with other systems.
 
-Trouver le but et l'usage de chacun de ces scripts est laissé "as an exercise for the reader", comme on dit.
+As for what each of these scripts do, well, that's left as an exercise to the reader.
