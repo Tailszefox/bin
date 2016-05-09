@@ -28,7 +28,7 @@ if [[ $currentHour -lt 6 ]]; then
 fi
 
 # The script is called for the first time after 6 AM
-if [[ $recordedDate -ne currentDate ]]; then
+if [[ ${recordedDate#0} -ne ${currentDate#0} ]]; then
     echo "" > ./log
 
     # Delete all leftover screenshots
