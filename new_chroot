@@ -16,7 +16,7 @@ read -e -p "Distribution to use: " -i "jessie" distribution
 
 debootstrap --arch amd64 $distribution /chroot/$path "http://httpredir.debian.org/debian"
 
-mkdir /chroot/$path/media/olddd
+mkdir /chroot/$path/dev/pts
 
 cd /chroot/$path/usr/sbin
 
