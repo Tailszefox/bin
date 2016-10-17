@@ -16,6 +16,12 @@ read -e -p "Distribution to use: " -i "jessie" distribution
 
 debootstrap --arch amd64 $distribution /chroot/$path "http://httpredir.debian.org/debian"
 
+echo "Enter to continue building chroot"
+echo "or Ctrl+C to stop"
+read z
+
+echo "Continuing..."
+
 mkdir /chroot/$path/dev/pts
 
 cd /chroot/$path/usr/sbin
