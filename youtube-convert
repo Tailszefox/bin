@@ -461,7 +461,7 @@ do
     indexVideos=$((indexVideos + 1))
 
     echo ""
-    echo "Video $indexVideos: $id - $urlToDl"
+    echo "Video $indexVideos/${#videoIds[@]}: $id - $urlToDl"
 
     if ! $verbose
     then
