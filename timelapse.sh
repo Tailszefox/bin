@@ -4,7 +4,7 @@
 # It takes a screenshot every time it's called
 # Every half hour, it then creates a video from all the screenshots it took,
 # creating a nice timelapse video
-# Requirements: xprintidle, scrot, ffmpeg
+# Requirements: xprintidle/xprintidle-ng, scrot, ffmpeg
 
 cd ~/timelapse
 
@@ -42,7 +42,7 @@ if [[ ${recordedDate#0} -ne ${currentDate#0} ]]; then
 fi
 
 # Get how long the user has been idle
-idle=`DISPLAY=:0 xprintidle`
+idle=`DISPLAY=:0 /usr/local/bin/xprintidle-ng`
 (( idleMinute=($idle/1000)/60 ))
 echo "Idle time: $idle (${idleMinute}m)"
 
