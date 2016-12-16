@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Make an ISO image from files/folders
+
 if [[ $# -eq 0 ]]; then
     echo "Usage: $0 [files]"
     exit

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Start a VM with an ISO (or the current disc) to test that it is bootable and working correctly
+
 if [[ $# -eq 1 ]]
 then
 	kvm -cdrom "$@" -boot d -m 512

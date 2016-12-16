@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Search and install packages containing files needed by cmake
+
 missingFiles=`cmake "$@"  2>&1 | grep "    .*\.cmake$"`
 
 if [[ -z $missingFiles ]]; then

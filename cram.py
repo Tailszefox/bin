@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# Simulate a CRAM-MD5 identification
+
 import hmac, hashlib, sys
 def cram_md5_response(username, password, base64challenge):
     return (username + ' ' +

@@ -1,2 +1,5 @@
 #!/bin/bash
+
+# Mount an ISO as a CD
+
 sudo mount "$1" /media/iso -t iso9660 -o loop

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Search multiple files with apt-file
+
 for f in "$@"
 do
     apt-file search "$f"

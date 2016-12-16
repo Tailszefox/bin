@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Update the Java browser plugin
+
 downloadPage=`curl -s -L http://www.oracle.com/technetwork/java/javase/downloads/index.html | grep -E --only-matching "/technetwork/java/javase/downloads/jdk8-downloads-([0-9]*).html" | head -1`
 
 fileUrl=`curl -s -L "http://www.oracle.com/$downloadPage" | grep -E --only-matching "http://download.oracle.com/otn-pub/java/jdk/8u(\w+)-(\w+)/jdk-8u(\w+)-linux-x64.tar.gz" | head -1`

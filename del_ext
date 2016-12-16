@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Delete all files having a specific extension according to the existing files having another specific extension
+# For example: "del_ext mp3 ogg" will delete MP3 files if an OGG file with the same name exists in the same directory
+
 function confirm()
 {
     echo -n "$@ "

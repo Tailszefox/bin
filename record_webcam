@@ -1,3 +1,5 @@
 #!/bin/bash
 
+# Record the webcam to AVI
+
 ffmpeg -f video4linux2 -i /dev/video2 -f alsa -i default -qscale 2 ~/Desktop/webcam.avi

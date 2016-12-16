@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Helper script for adding a Ubuntu PPA to a Debian system
+# Only use this if you know the packages offered are compatible with your version of Debian,
+# or you might break your system
+
 arg=$@
 ppaPath=${arg:4}
 ppaName=${ppaPath%/*}

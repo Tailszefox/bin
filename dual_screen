@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Change the screen configuration
+
 echo "Dual Screen Changer"
 echo "1- Enable HDMI only"
 echo "2- Enable both screens - 1920x1080"

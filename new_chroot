@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Create a new Debian chroot
+
 user=`whoami`
 
 if [[ $user != "root" ]]; then

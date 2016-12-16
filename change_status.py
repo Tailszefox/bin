@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Change the current status in multiple IMs programs at the same time
+
 import dbus
 import sys
 import subprocess

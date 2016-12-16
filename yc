@@ -1,3 +1,5 @@
+# Download URLs in the clipboard with youtube-convert
+
 url=`xclip -o`
 
 url=$(tr -dc '[[:print:]]' <<< "$url")

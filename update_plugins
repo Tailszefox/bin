@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Update Flash and Java
+
 #sudo pipelight-plugin --update
 #sudo pipelight-plugin --create-mozilla-plugins
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Update the Flash browser plugins
+
 sudo update-flashplugin-nonfree --status
 sudo update-flashplugin-nonfree --install --verbose
 sudo update-pepperflashplugin-nonfree --status

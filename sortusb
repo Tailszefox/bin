@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Sort a FAT32 filesystem in alphabetical order
+
 function confirm()
 {
     echo -n "$@ "

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Convert a file to MP4 using Handbrake
+
 function confirm()
 {
     echo -n "$@ "

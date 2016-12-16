@@ -1,3 +1,5 @@
 #!/bin/bash
 
+# Fetch a website with cURL and only display the headers
+
 curl -# -D - -o /dev/null $@

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Download a video using rtmpdump and convert it to MP4
+
 trap "exit;" SIGINT SIGTERM
 
 set -x

@@ -1,5 +1,7 @@
 #!/usr/bin/zsh
 
+# Create a new script in ~/bin
+
 if [ $# -eq 1 ]
 then
     if [ ! -f ~/bin/$1 ]

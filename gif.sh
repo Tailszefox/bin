@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Create GIF that are less than 2 MB
+# This was used back when Imgur didn't allow GIFs bigger than 2 MB
+
 function check
 {
   du -h $nomgif.gif

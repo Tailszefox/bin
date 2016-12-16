@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Sort files in the current directory in subfolders based on the first letter of their name
+
 if [[ $# -eq 0 ]]
 then
     exit

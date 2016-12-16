@@ -1,5 +1,8 @@
 #!/usr/bin/zsh
 
+# Move files using rsync
+# Once moved successfully, the files are put into the trash (KDE only)
+
 function trash ()
 {
         kioclient move "$@" trash:/

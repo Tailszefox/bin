@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Prints photos on 10x15cm paper with the proper aspect ratio and cropping
+# Print photos on 10x15cm paper with the proper aspect ratio and cropping
 
 if [[ $# -eq 0 ]]; then
     echo "Usage: $0 [path to images]"

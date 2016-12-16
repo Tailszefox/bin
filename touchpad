@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Enable or disable the touchpad
+
 if [[ $# -eq 1 ]]
 then
     echo "Argument, setting to $1"
