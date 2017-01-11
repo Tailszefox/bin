@@ -11,6 +11,14 @@ echo "0- Exit"
 echo ""
 read choice
 
+if [[ $choice -eq 0 ]]; then
+	echo "Aborted."
+	exit
+fi
+
+echo "Sleeping. Make sure to switch to X if on a TTY."
+sleep 5s
+
 if [[ $choice -eq 1 ]]; then
     xrandr --output LVDS1 --off
     xrandr --output HDMI1  --mode 1920x1080 #--auto
