@@ -670,6 +670,12 @@ do
         rename s/m4v/mp4/ *$id*.m4v
     fi
 
+    if ls NA\ -\ *$id.mp4 &> /dev/null; then
+        echo "Renaming..."
+        currentDate=$(date +%Y%m%d)
+        rename -v "s/NA -/${currentDate} -/" NA\ -\ *$id.mp4
+    fi
+
     if $split
     then
         echo "Splitting video $id..."
