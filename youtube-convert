@@ -173,53 +173,53 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
             P=`basename "$0"`
             echo -e "Usage: $P [options] URL"
             echo -e "   -U"
-            echo -e "       Ne pas limiter la vitesse de téléchargement (défaut: limité à $DEFAULTLIMIT)"
-            echo -e "   -l limite"
-            echo -e "       Limitation de la vitesse de download à \e[1mlimite\e[0m (implique -P 1)"
-            echo -e "   -s numéro"
-            echo -e "       Vidéo par laquelle démarrer"
-            echo -e "   -e numéro"
-            echo -e "       Vidéo à laquelle s'arrêter"
+            echo -e "       Don't limit download speed (default: limited to $DEFAULTLIMIT)"
+            echo -e "   -l limit"
+            echo -e "       Limit download speed to \e[1mlimit\e[0m (implies -P 1)"
+            echo -e "   -s number"
+            echo -e "       Video to start download at"
+            echo -e "   -e number"
+            echo -e "       Video to end download at"
             echo -e "   -r regex"
-            echo -e "       Télécharge uniquement les vidéos correspondantes à \e[1mregex\e[0m"
+            echo -e "       Only download videos matching \e[1mregex\e[0m"
             echo -e "   -x regex"
-            echo -e "       Ne télécharge pas les vidéos correspondantes à \e[1mregex\e[0m"
-            echo -e "   -f FORMAT"
-            echo -e "       Télécharge le format demandé"
+            echo -e "       Do not download videos matching \e[1mregex\e[0m"
+            echo -e "   -f format"
+            echo -e "       Download specificed format"
             echo -e "   -b"
-            echo -e "       Téléchargement en basse qualité (240p)"
+            echo -e "       Low-quality download (240p)"
             echo -e "   -a"
-            echo -e "       Conversion pour l'autoradio"
-            echo -e "   -p prefixe"
-            echo -e "       Rajoute \e[1mprefix\e[0m au nom de fichier"
+            echo -e "       Convert video for car-radio"
+            echo -e "   -p prefix"
+            echo -e "       Add \e[1mprefix\e[0m to filename"
             echo -e "   -I [start]"
-            echo -e "       Ajoute un nombre auto-incrémenté au début du nom de fichier. Démarre à \e[1mstart\e[0m si précisé."
+            echo -e "       Add auto-incremented number to beginning of filename. Start at \e[1mstart\e[0m if specified."
             echo -e "   -i"
-            echo -e "       Ignore les vidéos déjà existantes"
+            echo -e "       Skip videos already downloaded"
             echo -e "   -F"
-            echo -e "       Liste les formats disponibles"
+            echo -e "       List available formats"
             echo -e "   -o format"
-            echo -e "       Utilise \e[1mformat\e[0m pour nommer le fichier (défaut : \"$DEFAULTFILENAME\")"
+            echo -e "       Use \e[1mformat\e[0m as filename (default: \"$DEFAULTFILENAME\")"
             echo -e "   -R"
-            echo -e "       Ne pas limiter le nom du fichier aux caractères ASCII"
+            echo -e "       Do not limit filename to ASCII characters"
             echo -e "   -C"
-            echo -e "       Conversion de la vidéo en fichier audio"
+            echo -e "       Convert video to audio file"
             echo -e "   -A"
-            echo -e "       Utiliser aria2 pour télécharger la vidéo"
-            echo -e "   -P chiffre"
-            echo -e "       Télécharge \e[1mchiffre\e[0m vidéos en parallèle avec aria (implique -A)"
-            echo -e "   -S secondes"
-            echo -e "       Divise la vidéo en plusieurs vidéos d'une durée de \e[1msecondes\e[0m"
+            echo -e "       Use aria2 to download videos"
+            echo -e "   -P number"
+            echo -e "       Download \e[1mnumber\e[0m videos in parallel (implies -A)"
+            echo -e "   -S seconds"
+            echo -e "       Split video to a new file every \e[1mseconds\e[0m"
             echo -e "   -W"
-            echo -e "       Télécharge les sous-titres avec la vidéo"
+            echo -e "       Download subtitles alongside video"
             echo -e "   -Y arguments"
-            echo -e "       Passe \e[1marguments\e[0m à youtube-dl"
+            echo -e "       Directly passes \e[1marguments\e[0m to youtube-dl"
             echo -e "   -v"
-            echo -e "       Verbose : affiche la commande"
+            echo -e "       Verbose mode, show how youtube-dl is invoked"
             exit 0
             ;;
         *)
-            echo "Erreur: option inconnue trouvée"
+            echo "Error: unknown option found"
             exit 0
             ;;
     esac
@@ -232,13 +232,13 @@ fi
 echo "Youtube-Convert"
 
 if [[ $quality == *bestvideo*+bestaudio* ]] && $useAria; then
-    echo "Utilisation d'aria : limitation de la qualité maximale"
+    echo "Using aria: limiting maximum quality"
     #quality=" --max-quality 100"
     quality=" -f best "
 fi
 
 if [[ $unlimited == -1 ]] && ! $useAria; then
-    echo "Vitesse de téléchargement limitée à $DEFAULTLIMIT"
+    echo "Download speed limited to $DEFAULTLIMIT"
     speed=" -r $DEFAULTLIMIT"
     speedNumber="$DEFAULTLIMIT"
 fi
@@ -266,10 +266,10 @@ do
     echo $url
 
     if [[ $url == *://t.co/* ]]; then
-        echo "Résolution de l'URL..."
+        echo "Resolving URL..."
         
         url=`curl -i $url | grep -i Location | cut -d ' ' -f 2`
-        echo "URL trouvé : $url"
+        echo "URL found: $url"
         echo ""
     fi
 
@@ -278,7 +278,7 @@ do
 
         n=${#BASH_REMATCH[*]}
         id=${BASH_REMATCH[1]}
-        echo "ID : $id"
+        echo "ID: $id"
         urlToDl="https://www.youtube.com/watch?v=$id"
 
     elif [[ $url == *youtube* || $url == *youtu.be* ]]; then
@@ -287,35 +287,35 @@ do
         if [[ $url =~ $regexYouTube ]]; then
             n=${#BASH_REMATCH[*]}
             id=${BASH_REMATCH[3]}
-            echo "ID : $id"
+            echo "ID: $id"
             urlToDl="https://www.youtube.com/watch?v=$id"
         else
-            echo "Pas d'ID trouvé"
+            echo "No video ID found"
 
             if [[ $url =~ $regexYouTubePlaylist ]]; then
-                echo "Playlist trouvée"
+                echo "Playlist found"
                 n=${#BASH_REMATCH[*]}
                 id=${BASH_REMATCH[2]}
                 urlToDl="https://www.youtube.com/playlist?list=$id"
                 playlist=true
             else
-                echo "Pas de playlist trouvée"
+                echo "No playlist found"
                 if [[ $url =~ $regexYouTubeUser ]]; then
                     n=${#BASH_REMATCH[*]}
                     id=${BASH_REMATCH[2]}
-                    echo "Username : $id"
+                    echo "Username: $id"
                     urlToDl="https://www.youtube.com/user/$id"
                     playlist=true
                 else
-                    echo "Pas de nom trouvé"
+                    echo "No username found"
                     if [[ $url =~ $regexYouTubeChannel ]]; then
                         n=${#BASH_REMATCH[*]}
                         id=${BASH_REMATCH[2]}
-                        echo "Channel : $id"
+                        echo "Channel: $id"
                         urlToDl="https://www.youtube.com/channel/$id"
                         playlist=true
                     else
-                        echo "Pas de chaîne trouvée"
+                        echo "No channel name found"
                         continue
                     fi
                 fi
@@ -328,10 +328,10 @@ do
         if [[ $url =~ $regexDaily ]]; then
             n=${#BASH_REMATCH[*]}
             id=${BASH_REMATCH[2]}
-            echo "ID : $id"
+            echo "ID: $id"
             urlToDl="http://www.dailymotion.com/video/${id}_video"
         else
-            echo "ID non trouvé."
+            echo "ID not found"
             continue
         fi
 
@@ -341,16 +341,16 @@ do
         if [[ $url =~ $regexVimeo ]]; then
             n=${#BASH_REMATCH[*]}
             id=${BASH_REMATCH[2]}
-            echo "ID : $id"
+            echo "ID: $id"
             urlToDl="http://vimeo.com/${id}"
         else
             if [[ $url =~ $regexVimeoPlayer ]]; then
                 n=${#BASH_REMATCH[*]}
                 id=${BASH_REMATCH[2]}
-                echo "ID : $id"
+                echo "ID: $id"
                 urlToDl="https://player.vimeo.com/video/${id}"
             else
-                echo "ID non trouvé."
+                echo "ID not found"
                 continue
             fi
         fi
@@ -360,10 +360,10 @@ do
         if [[ $url =~ $regexEscapist ]]; then
             n=${#BASH_REMATCH[*]}
             id=${BASH_REMATCH[2]}
-            echo "ID : $id"
+            echo "ID: $id"
             urlToDl="http://www.escapistmagazine.com/videos/view/video/${id}-video"
         else
-            echo "ID non trouvé."
+            echo "ID not found"
             continue
         fi
 
@@ -373,10 +373,10 @@ do
         if [[ $url =~ $regexBlip ]]; then
             n=${#BASH_REMATCH[*]}
             id=${BASH_REMATCH[2]}
-            echo "ID : $id"
+            echo "ID: $id"
             urlToDl="http://blip.tv/user/video-${id}"
         else
-            echo "ID non trouvé."
+            echo "ID not found"
             continue
         fi
 
@@ -387,7 +387,7 @@ do
             
             if [[ `curl "http://blip.tv/play/$secondUrl" | grep file=` =~ (.*)file=(.*)flash%2F(.*)\" ]]; then
                 id=${BASH_REMATCH[3]}
-                echo "ID : $id"
+                echo "ID: $id"
                 
                 $0 "http://blip.tv/user/video-$id"
             fi
@@ -401,10 +401,10 @@ do
         if [[ $url =~ $regexViddler ]]; then
             n=${#BASH_REMATCH[*]}
             id=${BASH_REMATCH[1]}
-            echo "ID : $id"
+            echo "ID: $id"
             urlToDl="http://viddler.com/v/${id}"
         else
-            echo "ID non trouvé."
+            echo "ID not found"
             continue
         fi
 
@@ -414,29 +414,29 @@ do
         if [[ $url =~ $regexNoco ]]; then
             n=${#BASH_REMATCH[*]}
             id=${BASH_REMATCH[1]}
-            echo "ID : $id"
+            echo "ID: $id"
             urlToDl=$url
         else
-            echo "ID non trouvé."
+            echo "ID not found"
             continue
         fi
 
     else
-        echo "Site inconnu, utilisation de l'extracteur de base."
+        echo "Unknown website, letting youtube-dl figure it out..."
         urlToDl=$url
         id=$RANDOM
     fi
 
     if ! $playlist && ls *$id*.mp4 &> /dev/null; then
         if ls *$id*.mp4.aria2 &> /dev/null; then
-            echo "Fichier aria2 trouvé."
+            echo "aria2 file found"
         else
             ls -l *$id*.mp4
             if $ignoreExisting; then
-                echo "La vidéo a été ignorée car elle existe déjà..."
+                echo "Video already downloaded, skipping..."
                 continue
             else
-                confirm La vidéo a déjà été téléchargée. Écraser ?
+                confirm This video has already been downloaded. Overwrite?
                 if [ $? -eq 1 ]
                 then
                     continue
@@ -494,12 +494,12 @@ do
 
     currentQuality=$quality
     if [[ $quality == *bestvideo*+bestaudio* ]] && ! $youtube; then
-        echo "Utilisation de la qualité best"
+        echo "Non-Youtube - Using best quality"
         currentQuality=" -f best"
     fi
 
     if [[ $quality == *bestvideo*+bestaudio* ]] && $youtube; then
-        echo "YouTube : ajout de conditions supplémentaires"
+        echo "Youtube - Using special format specification"
         currentQuality=' -f "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]"'
     fi
 
@@ -548,7 +548,7 @@ do
         indexAria=0
 
         if [[ ${#urlsAndFilenames[@]} -eq 0 ]]; then
-             echo "URL introuvable."
+             echo "URL not found"
          fi 
 
         while [ $indexAria -lt ${#urlsAndFilenames[@]} ]
@@ -559,7 +559,7 @@ do
                 indexAria=$((indexAria + 1))
                 outputFilename="${urlsAndFilenames[indexAria]}"
 
-                echo "URL trouvé."
+                echo "URL found"
                 #echo "Output: $outputFilename"
                 #echo "URL: $outputUrl"
 
@@ -572,7 +572,7 @@ do
 
                 ariaCmds+=("$cmdAriaCurrent")
             else
-                echo "URL introuvable."
+                echo "URL not found"
             fi
             indexAria=$((indexAria + 1))
         done
@@ -583,7 +583,7 @@ do
 
         if [[ $? -eq 1 ]]
         then
-            echo "Download may have failed."
+            echo "Download may have failed..."
             continue
         fi
     fi
@@ -658,7 +658,7 @@ do
 
     if $split
     then
-        echo "Découpage de la vidéo $id..."
+        echo "Splitting video $id..."
         split_video *$id*mp4 $splitDuration
     fi
 
@@ -666,11 +666,11 @@ do
     then
         if $split
         then
-            echo "Conversion des vidéos découpées $id..."
+            echo "Converting split videos $id..."
             find . -maxdepth 1 -type f -name "*$id*-split-*mp4" -exec bash -c 'convert_autoradio -y "$1"' __ {} \;
             rm -Iv *$id*mp4
         else
-            echo "Conversion de la vidéo $id..."
+            echo "Converting video $id..."
             find . -maxdepth 1 -type f -name "*$id*mp4" -exec bash -c 'convert_autoradio -y "$1"' __ {} \;
         fi
     fi
