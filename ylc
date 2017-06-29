@@ -10,5 +10,5 @@ else
 fi
 
 echo $yt
-url=`youtube-dl -g "$yt"`
+url=`youtube-dl -f best -g "$yt"`
 vlc $url
