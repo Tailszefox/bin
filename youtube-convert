@@ -118,7 +118,7 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
             quality=' -f "best[height<=240]"'
             ;;
         f)
-            quality=" -f $OPTARG"
+            quality=" -f \"$OPTARG\""
             ;;
         p)
             prefix="$OPTARG"
