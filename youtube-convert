@@ -260,6 +260,7 @@ regexEscapist="(.*)/([0-9]{4,5})-(.*)"
 regexViddler=".*/embed/(\w+)/.*"
 regexNoco=".*/emission/([0-9]+)/.*"
 regexAllocine=".*/video-([0-9]+)/$"
+regexTwitchVod=".*/videos/([0-9]+)$"
 
 for url in $@
 do
@@ -430,6 +431,19 @@ do
             id=${BASH_REMATCH[1]}
             echo "ID: $id"
             urlToDl="http://www.allocine.fr/video/video-${id}/"
+        else
+            echo "No ID found"
+            continue
+        fi
+
+    elif [[ $url == *twitch.tv* ]]; then
+        echo "Twitch"
+
+        if [[ $url =~ $regexTwitchVod ]]; then
+            n=${#BASH_REMATCH[*]}
+            id=${BASH_REMATCH[1]}
+            echo "ID: $id"
+            urlToDl="https://www.twitch.tv/videos/${id}"
         else
             echo "No ID found"
             continue
