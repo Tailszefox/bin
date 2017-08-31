@@ -5,3 +5,4 @@
 echo "Waiting..."
 sleep 1s
 xset dpms force off
+xinput --disable "pointer:Logitech Gaming Mouse G300"
