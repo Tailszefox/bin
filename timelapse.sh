@@ -31,8 +31,11 @@ fi
 if [[ ${recordedDate#0} -ne ${currentDate#0} ]]; then
     echo "" > ./log
 
-    # Delete all leftover screenshots
-    find -maxdepth 1 -name "*.jpg" -delete
+    # Delete archived screenshots
+    find ./yesterday -maxdepth 1 -name "*.jpg" -delete
+
+    # Archive current screenshots
+    find -maxdepth 1 -name "*.jpg" -execdir mv '{}' ./yesterday \;
 
     # Delete old videos
     find ./videos -maxdepth 1 -name "*.mp4" -ctime +7 -delete
