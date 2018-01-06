@@ -543,7 +543,7 @@ do
 
     if [[ $quality == *bestvideo*+bestaudio* ]] && $youtube; then
         echo "Youtube - Using special format specification"
-        currentQuality=' -f "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]"'
+        currentQuality=' -f "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]"'
     fi
 
     filenameOutput=$prefix$filename
