@@ -261,6 +261,7 @@ regexViddler=".*/embed/(\w+)/.*"
 regexNoco=".*/emission/([0-9]+)/.*"
 regexAllocine=".*/video-([0-9]+)/$"
 regexTwitchVod=".*/videos/([0-9]+)$"
+regexTwitter="twitter\.com/(.*)/status/([0-9]+)$"
 
 for url in $@
 do
@@ -444,6 +445,20 @@ do
             id=${BASH_REMATCH[1]}
             echo "ID: $id"
             urlToDl="https://www.twitch.tv/videos/${id}"
+        else
+            echo "No ID found"
+            continue
+        fi
+
+    elif [[ $url == *twitter.com* ]]; then
+        echo "Twitter"
+
+        if [[ $url =~ $regexTwitter ]]; then
+            n=${#BASH_REMATCH[*]}
+            usernameTwitter=${BASH_REMATCH[1]}
+            id=${BASH_REMATCH[2]}
+            echo "ID: $id"
+            urlToDl="https://twitter.com/${usernameTwitter}/status/${id}"
         else
             echo "No ID found"
             continue
