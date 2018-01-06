@@ -1,6 +1,6 @@
 # Download URLs in the clipboard with youtube-convert
 
-url=`xclip -o`
+url=`xclip -selection clipboard -o`
 
 url=$(tr -dc '[[:print:]]' <<< "$url")
 url="$(echo "$url" | sed -e 's/[()&]/\\&/g')"
