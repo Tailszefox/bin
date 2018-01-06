@@ -39,7 +39,7 @@ function confirm()
 fullCommand="$0 $@"
 
 DEFAULTLIMIT="1024k"
-DEFAULTFILENAME="%(upload_date)s - %(title)s - %(id)s.%(ext)s"
+DEFAULTFILENAME="%(upload_date)s - %(title)s - %(uploader)s - %(id)s.%(ext)s"
 
 start=""
 end=""
