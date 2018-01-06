@@ -43,4 +43,10 @@ else
 	mount --bind /proc /chroot/$chroot/proc
 fi
 
+if mountpoint -q "/chroot/$chroot/sys"; then
+        echo "sys already mounted"
+else
+        mount --bind /sys /chroot/$chroot/sys
+fi
+
 chroot /chroot/$chroot
