@@ -61,6 +61,8 @@ restrict="--restrict-filenames"
 convertAudio=""
 useAria=false
 useAriaParallel=4
+archiveVideo=false
+archiveVideoArguments=""
 split=false
 splitDuration=0
 ignoreExisting=false
@@ -85,7 +87,8 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
             unlimited=1
             ;;
         A)
-            useAria=true
+            archiveVideo=true
+            archiveVideoArguments=" --write-info-json --skip-download"
             ;;
         r)
             titleRegex=" --match-title \"$OPTARG\""
@@ -205,7 +208,7 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
             echo -e "   -C"
             echo -e "       Convert video to audio file"
             echo -e "   -A"
-            echo -e "       Use aria2 to download videos"
+            echo -e "       Don't download video, only archive it as a text file"
             echo -e "   -P number"
             echo -e "       Download \e[1mnumber\e[0m videos in parallel (implies -A)"
             echo -e "   -S seconds"
@@ -565,6 +568,7 @@ do
     cmd+=$listFormats" "
     cmd+=$convertAudio" "
     cmd+=$subtitles" "
+    cmd+=$archiveVideoArguments" "
     cmd+=$rawArgs" "
     cmd+=$loginRequired" "
     cmd+="--ignore-errors -c $restrict -o "
@@ -693,6 +697,31 @@ do
     if [[ -n $listFormats ]]
     then
         continue
+    fi
+
+    if $archiveVideo; then
+        echo ""
+
+        jsonFilename=$(find . -maxdepth 1 -type f -name "*$id.info.json")
+        echo "Looking for $jsonFilename..."
+
+        if [[ -z "$jsonFilename" ]]; then
+            echo "find failed, aborting..."
+            continue
+        fi
+
+        if [[ ! -f "$jsonFilename" ]]; then
+            echo ".info.json file not found, aborting..."
+            continue
+        fi
+
+        archiveFilename="${jsonFilename/.info.json/.strm}"
+
+        echo "Archiving $id to $archiveFilename..."
+        echo "plugin://plugin.video.youtube/?path=/root/video&action=play_video&videoid=$id" > "$archiveFilename"
+        cat "$archiveFilename"
+
+        rm -Iv *$id.info.json
     fi
 
     if ls *$id*.m4v &> /dev/null; then
