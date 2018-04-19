@@ -2,9 +2,15 @@
 
 # Update the Java browser plugin
 
+mkdir -p /tmp/java_plugin_install
+
+cd /tmp/java_plugin_install
+
 downloadPage=`curl -s -L http://www.oracle.com/technetwork/java/javase/downloads/index.html | grep -E --only-matching "/technetwork/java/javase/downloads/jdk8-downloads-([0-9]*).html" | head -1`
 
-fileUrl=`curl -s -L "http://www.oracle.com/$downloadPage" | grep -E --only-matching "http://download.oracle.com/otn-pub/java/jdk/8u(\w+)-(\w+)/jdk-8u(\w+)-linux-x64.tar.gz" | head -1`
+echo "Download page is http://www.oracle.com$downloadPage"
+
+fileUrl=`curl -s -L "http://www.oracle.com$downloadPage" | grep -E --only-matching "http://download.oracle.com/otn-pub/java/jdk/8u(\w+)-(\w+)/([0-9a-f]+)/jdk-8u(\w+)-linux-x64.tar.gz" | head -1`
 
 regexVersion="8u([0-9]+)"
 [[ $fileUrl =~ $regexVersion ]]
@@ -22,6 +28,8 @@ if [[ $currentVersion -eq $availableVersion ]]; then
     echo "No update needed"
     exit
 fi
+
+echo "Ready to download $fileUrl..."
 
 wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" $fileUrl
 
