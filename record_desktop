@@ -2,4 +2,4 @@
 
 # Record the desktop
 
-ffmpeg -f x11grab -s 1920x1080 -r 25 -i :0.0 -qscale:v 1 ~/Desktop/desktop.mpeg
+ffmpeg -f x11grab -s 1920x1080 -r 25 -i :0.0 -qscale:v 1 ~/Desktop/desktop.avi
