@@ -2,4 +2,29 @@
 
 # Mount an ISO as a CD
 
-sudo mount "$1" /media/iso -t iso9660 -o loop
+P=`basename "$0"`
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $P (-u) [ISO file]"
+    exit
+fi
+
+isoFormat="iso9660"
+
+while getopts "uh" opt; do
+    case $opt in
+        u)
+            isoFormat="udf"
+            ;;
+        h)
+            echo "Usage: $P [ISO file]"
+            echo "  -u"
+            echo "      Mount as UDF filesystem instead of iso9660"
+            exit 0
+    esac
+done
+
+shift $((OPTIND-1))
+
+echo "Mounting $1 as $isoFormat filesystem..."
+sudo mount "$1" /media/iso -t "$isoFormat" -o loop
