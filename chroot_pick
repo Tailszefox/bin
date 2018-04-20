@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Switch to a specific chroot
+
+user=`whoami`
+
+if [[ $user != "root" ]]; then
+    echo "Running $0 as root..."
+    sudo $0 $@
+    exit
+fi
+
+if [[ $# -eq 0 ]]; then
+    echo "Available chroot:"
+    ls -l /chroot
+
+    echo ""
+    read -e -p "Use /chroot/" chroot
+else
+    chroot="$1"
+fi
+
+if [[ ! -d "/chroot/$chroot" ]]; then
+    echo "/chroot/$chroot does not exist"
+    exit
+fi
+
+#if mountpoint -q "/chroot/$chroot/media/olddd"; then
+#    echo "olddd already mounted"
+#else
+#    mount /dev/sdb1 /chroot/$chroot/media/olddd
+#fi
+
+if mountpoint -q "/chroot/$chroot/dev/pts"; then
+	echo "pts already mounted"
+else
+	mount --bind /dev/pts /chroot/$chroot/dev/pts
+fi
+
+if mountpoint -q "/chroot/$chroot/proc"; then
+        echo "proc already mounted"
+else
+	mount --bind /proc /chroot/$chroot/proc
+fi
+
+if mountpoint -q "/chroot/$chroot/sys"; then
+        echo "sys already mounted"
+else
+        mount --bind /sys /chroot/$chroot/sys
+fi
+
+chroot /chroot/$chroot
