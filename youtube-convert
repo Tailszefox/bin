@@ -718,7 +718,7 @@ do
         archiveFilename="${jsonFilename/.info.json/.strm}"
 
         echo "Archiving $id to $archiveFilename..."
-        echo "plugin://plugin.video.youtube/?path=/root/video&action=play_video&videoid=$id" > "$archiveFilename"
+        echo "plugin://plugin.video.youtube/play/?video_id=$id" > "$archiveFilename"
         cat "$archiveFilename"
 
         rm -Iv *$id.info.json
