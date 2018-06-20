@@ -120,8 +120,15 @@ do
         fi
 
         echo "$oldname -> $newname"
-        ffmpeg_quiet "$oldname" -target ntsc-dvd -threads 4 -aspect "16:9" -b:v 256k "$newname"
-        retval=$?
+
+        if [[ $filename == *.mp3 ]]; then
+            echo "Fichier audio, conversion en fichier vidéo..."
+            ffmpeg -f lavfi -i 'color=c=black:s=720x480:r=24' -filter_complex "[0:v]drawtext=text='%{pts\:hms}':x=(w-tw)/2:y=h-(2*lh):fontcolor=white" -i "$oldname" -map 0:v -map 1:a -target ntsc-dvd -threads 4 -aspect "16:9" -b:v 256k -shortest "$newname"
+            retval=$?
+        else
+            ffmpeg_quiet "$oldname" -target ntsc-dvd -threads 4 -aspect "16:9" -b:v 256k "$newname"
+            retval=$?
+        fi
 
         if [[ $retval -ne 0 ]]; then
             echo "Erreur : ffmpeg n'a pas quitté correctement."
