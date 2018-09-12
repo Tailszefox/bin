@@ -7,5 +7,5 @@ url="$(echo "$url" | sed -e 's/[()&]/\\&/g')"
 urlQuotes="$(echo "$url" | sed -e 's/\([^ ]\+\)/"\1"/g')"
 sed -i.bak 's%;yc$%;youtube-convert -i '$urlQuotes'%g' $HISTFILE
 fc -R
-cd ~/Bureau/offline
+cd ~/offline
 youtube-convert -i $url
