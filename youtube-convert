@@ -66,6 +66,7 @@ archiveVideoArguments=""
 split=false
 splitDuration=0
 ignoreExisting=false
+overwriteExisting=false
 increment=false
 incrementValue=""
 subtitles=""
@@ -74,7 +75,7 @@ rawArgs=""
 videoIds=()
 videoUrls=()
 
-while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
+while getopts ":s:e:l:r:x:p:f:o:vbaiwI:FRCAUP:S:Y:Wh" opt; do
     case $opt in
         l)
             speed=" -r $OPTARG"
@@ -109,6 +110,9 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
             ;;
         i)
             ignoreExisting=true
+            ;;
+        w)
+            overwriteExisting=true
             ;;
         s)
             start=" --playlist-start $OPTARG"
@@ -199,6 +203,8 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
             echo -e "       Add auto-incremented number to beginning of filename. Start at \e[1mstart\e[0m if specified."
             echo -e "   -i"
             echo -e "       Skip videos already downloaded"
+            echo -e "   -w"
+            echo -e "       OverWrite videos already downloaded"
             echo -e "   -F"
             echo -e "       List available formats"
             echo -e "   -o format"
@@ -481,6 +487,8 @@ do
             if $ignoreExisting; then
                 echo "Video already downloaded, skipping..."
                 continue
+            elif $overwriteExisting; then
+                echo "Video already downloaded, overwritting..."
             else
                 confirm This video has already been downloaded. Overwrite?
                 if [ $? -eq 1 ]
@@ -489,6 +497,23 @@ do
                 fi
                 #rm -vi *$id*.mp4
             fi
+        fi
+    fi
+
+    if ! $playlist && ls *$id*.m3u &> /dev/null; then
+        ls -l *$id*.m3u
+        if $ignoreExisting; then
+            echo "Video already archived, skipping..."
+            continue
+        elif $overwriteExisting; then
+            echo "Video already archived, overwritting..."
+        else
+            confirm This video has already been downloaded. Overwrite?
+            if [ $? -eq 1 ]
+            then
+                continue
+            fi
+            #rm -vi *$id*.mp4
         fi
     fi
 
@@ -715,10 +740,14 @@ do
             continue
         fi
 
-        archiveFilename="${jsonFilename/.info.json/.strm}"
+        archiveFilename="${jsonFilename/.info.json/.m3u}"
 
         echo "Archiving $id to $archiveFilename..."
-        echo "plugin://plugin.video.youtube/play/?video_id=$id" > "$archiveFilename"
+        echo "#EXTCPlayListM3U::M3U" > "$archiveFilename"
+        echo "#EXTINF:0,$id" >> "$archiveFilename"
+        echo "plugin://plugin.video.youtube/play/?video_id=$id" >> "$archiveFilename"
+        echo "#EXTINF:0,Dummy video" >> "$archiveFilename"
+        echo "/tmp/dummy-video-for-$id" >> "$archiveFilename"
         cat "$archiveFilename"
 
         rm -Iv *$id.info.json
