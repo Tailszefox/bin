@@ -9,6 +9,14 @@ if [[ $user != "root" ]]; then
     exit
 fi
 
+echo "Checking if apt isn't running already..."
+pgrep -U root -l apt
+
+if [[ $? -ne 1 ]]; then
+    echo "apt is already running, giving up..."
+    exit
+fi
+
 aptitude update
 aptitude safe-upgrade
 aptitude full-upgrade
