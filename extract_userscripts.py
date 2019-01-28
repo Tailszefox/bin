@@ -25,5 +25,8 @@ for key in userscripts:
         filename = re.sub('[\s\(\)]', '_', metadata["name"]) + ".user.js"
         print("Saving to {}".format(filename))
 
+        with open('/home/tails/backup/firefox/userscripts/{}'.format(filename), 'w') as uf:
+            uf.write(userscripts[key])
+
         with open('/home/tails/Documents/scripts/github/Userscripts/{}'.format(filename), 'w') as uf:
             uf.write(userscripts[key])
