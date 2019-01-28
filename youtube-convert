@@ -14,7 +14,7 @@ function finishScript()
         jobs -p | xargs kill
     fi
 
-    sleep 3s
+    sleep 1s
     echo "Command stopped: $fullCommand"
     echo Done
     exit
@@ -38,7 +38,7 @@ function confirm()
 
 fullCommand="$0 $@"
 
-DEFAULTLIMIT="1024k"
+DEFAULTLIMIT="30M"
 DEFAULTFILENAME="%(upload_date)s - %(title)s - %(uploader)s - %(id)s.%(ext)s"
 
 start=""
@@ -105,7 +105,7 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
             #quality=" --max-quality 18"
             quality=' -f "best[height<=360][ext=mp4]"'
             split=true
-            splitDuration="1800"
+            splitDuration="600"
             ;;
         i)
             ignoreExisting=true
@@ -176,7 +176,7 @@ while getopts ":s:e:l:r:x:p:f:o:vbaiI:FRCAUP:S:Y:Wh" opt; do
             P=`basename "$0"`
             echo -e "Usage: $P [options] URL"
             echo -e "   -U"
-            echo -e "       Don't limit download speed (default: limited to $DEFAULTLIMIT)"
+            echo -e "       Don't limit download speed (default)"
             echo -e "   -l limit"
             echo -e "       Limit download speed to \e[1mlimit\e[0m (implies -P 1)"
             echo -e "   -s number"
@@ -241,9 +241,9 @@ if [[ $quality == *bestvideo*+bestaudio* ]] && $useAria; then
 fi
 
 if [[ $unlimited == -1 ]] && ! $useAria; then
-    echo "Download speed limited to $DEFAULTLIMIT"
-    speed=" -r $DEFAULTLIMIT"
-    speedNumber="$DEFAULTLIMIT"
+    echo "Download speed unlimited"
+    # speed=" -r $DEFAULTLIMIT"
+    # speedNumber="$DEFAULTLIMIT"
 fi
 
 shift $((OPTIND-1))
