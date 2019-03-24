@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# This won't work past Firefox 66 because scripts are now stored inside an indexedDB
+
 import json
 import re
 
