@@ -20,15 +20,15 @@ function confirm()
 }
 
 if [[ $# -lt 2 ]]; then
-     echo "Usage: $0 [fichiers de références] [fichiers à supprimer]"
+     echo "Usage: $0 [reference extension] [extension to be deleted]"
      exit
 fi 
 
 ref=$2
 del=$1
 
-echo "Supprimer tous les fichiers .$del en prenant comme référence les fichiers $ref."
-confirm "Confirmer ?"
+echo "Delete all .$del if a $ref. of the same name exists"
+confirm "OK?"
 
 if [ $? -eq 1 ]
 then
@@ -39,12 +39,10 @@ echo ""
 
 find . -maxdepth 1 -type f -iname "*.$ref" -print0 | while IFS= read -r -d $'\0' line; do
     toDel=${line/.$ref/.$del}
-    echo "Fichier de référence : $line"
+    echo "Reference file : $line"
     ls -l "$line"
-    echo "Fichier à supprimer : $toDel"
+    echo "File to delete : $toDel"
     ls -l "$toDel"
     rm -v "$toDel"
     echo ""
 done
-
-#find -maxdepth 1 -name "*.$ref" -exec bash -c "f='{}'; ls \"\$f\"; ls \"\${f%.*}.$del\"; rm -rvf \"\${f%.*}.$del\"; echo " \;
