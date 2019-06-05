@@ -3,10 +3,9 @@
 # Change the screen configuration
 
 echo "Dual Screen Changer"
-echo "1- Enable HDMI only"
-echo "2- Enable both screens - 1920x1080"
-echo "3- Enable both screens - 1600x900/1440x900"
-echo "4- Enable laptop screen only"
+echo "1- Enable external screen only"
+echo "2- Enable both screens"
+echo "3- Enable laptop screen only"
 echo "0- Exit"
 echo ""
 read choice
@@ -20,20 +19,17 @@ echo "Sleeping. Make sure to switch to X if on a TTY."
 sleep 5s
 
 if [[ $choice -eq 1 ]]; then
-    xrandr --output LVDS1 --off
-    xrandr --output HDMI1  --mode 1920x1080 #--auto
-    echo "Screen disabled."
+    xrandr --output eDP-1 --off
+    xrandr --output DP-2 --auto
+    echo "Laptop screen disabled."
 elif [[ $choice -eq 2 ]]; then
-    xrandr --output HDMI1 --auto
-    xrandr --output LVDS1 --auto #--pos 320x180
-    echo "Screen enabled, reopen lid."
+    xrandr --output eDP-1 --auto
+    xrandr --output DP-2 --auto
+    echo "Both screens enabled."
 elif [[ $choice -eq 3 ]]; then
-    xrandr --output HDMI1 --mode 1440x900
-    xrandr --output LVDS1 --auto
-    echo "Screen enabled, reopen lid."
-elif [[ $choice -eq 4 ]]; then
-    xrandr --output HDMI1 --off
-    xrandr --output LVDS1 --auto
+    xrandr --output eDP-1 --auto
+    xrandr --output DP-2 --off
+    echo "External screen disabled."
 else
     exit
 fi
