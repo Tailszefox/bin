@@ -1,11 +1,11 @@
-# Download URLs in the clipboard with youtube-convert
+# Download URLs in the clipboard with youtube-dl
 
 url=`xclip -selection clipboard -o`
 
 url=$(tr -dc '[[:print:]]' <<< "$url")
 url="$(echo "$url" | sed -e 's/[()&]/\\&/g')"
 urlQuotes="$(echo "$url" | sed -e 's/\([^ ]\+\)/"\1"/g')"
-sed -i.bak 's%;yc$%;youtube-convert -i '$urlQuotes'%g' $HISTFILE
+sed -i.bak 's%;yc$%;youtube-dl '$urlQuotes'%g' $HISTFILE
 fc -R
 cd ~/offline
-youtube-convert -i $url
+youtube-dl ${=url}
