@@ -29,7 +29,7 @@ do
             ffmpegReturn=$?
         else
             # Video file
-            ffmpeg -nostdin "$splitFile" -target ntsc-dvd -threads 4 -aspect "16:9" -b:v 256k "$splitFileMpeg"
+            ffmpeg -nostdin -i "$splitFile" -target ntsc-dvd -threads 8 -aspect "16:9" -b:v 256k "$splitFileMpeg"
             ffmpegReturn=$?
         fi
 
