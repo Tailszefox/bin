@@ -9,6 +9,11 @@ fi
 
 for file in "$@"
 do
+    if [[ ! -f "$file" ]]; then
+        echo "$file not found"
+        continue
+    fi
+
     echo "Converting $file"
 
     split_video "$file" 600
