@@ -2,132 +2,13 @@
 
 # Convert a file to MP4 using Handbrake
 
-function confirm()
-{
-    echo -n "$@ "
-    read -e answer
-    for response in y Y yes YES Yes Sure sure SURE OK ok Ok o O oui
-    do
-        if [ "_$answer" == "_$response" ]
-        then
-            return 0
-        fi
-    done
-
-    # Any answer other than the list above is considerred a "no" answer
-    return 1
-}
-
-force=false
-keep=false
-defaultName=true
-directory=false
-suffix=false
-
-while getopts "o:yndsh" opt; do
-    case $opt in
-        o)
-            defaultName=false
-            setName=$OPTARG
-            ;;
-        y)
-            force=true
-            ;;
-        n)
-            keep=true
-            ;;
-        d)
-            directory=true
-            ;;
-        s)
-            suffix=true
-            ;;
-        h)
-            P=`basename "$0"`
-            echo "Usage: $P filename"
-            echo "  -y"
-            echo "      Écrase le fichier sans confirmation"
-            echo "  -n"
-            echo "      Garde le fichier sans confirmation"
-            echo "  -d"
-            echo "      Place le fichier dans un sous dossier plutôt que dans le dossier du fichier source"
-            echo "  -o [filename]"
-            echo "      Change le nom du fichier converti (même nom avec l'extension mp4 si non précisé). Non-utilisable avec plus d'un fichier"
-            echo "  -s"
-            echo "      Ajoute un suffixe au nom de la vidéo (_new.mp4)"
-            exit 0
-    esac
-done
-
-shift $((OPTIND-1))
-
-if ! $defaultName; then 
-    if [[ $# -ge 2 ]]; then
-    echo "-o ne peut être utilisé qu'avec un seul fichier en entrée"
-    exit
-    fi
-fi
-
-
-for f in "$@"
+for convertFrom in "$@"
 do
-    echo "Converting $f..."
+    convertTo=${convertFrom%\.*}.mp4
+    echo "$convertFrom -> $convertTo"
 
-    filename="$f"
+    HandBrakeCLI -i "$convertFrom" -o "$convertTo" -e x264 --x264-preset slow -q 20 --crop 0:0:0:0 -loose-anamorphic
 
-    cd `dirname "$filename"`
-
-    oldname=$filename
-
-    if $defaultName
-    then
-        if $suffix
-        then
-            newname=${filename%\.*}_new.mp4
-        else
-            newname=${filename%\.*}.mp4
-        fi
-    else
-        newname=$setName
-    fi
-
-    if $directory
-    then
-        mkdir -p "./conv"
-        newname="./conv/$newname"
-    fi
-
-    if ls "$newname" &> /dev/null; then
-        echo "Erreur: le fichier $newname existe déjà."
-        ls -l "$newname"
-        continue
-    fi
-
-    echo "$oldname -> $newname"
-    HandBrakeCLI -i "$filename" -o "$newname" -e x264 --x264-preset medium -q 20 --crop 0:0:0:0 -loose-anamorphic
-
-    ls -lh "$oldname"
-    ls -lh "$newname"
-
-    if ! ls "$newname" &> /dev/null; then
-        echo "Erreur..."
-        continue
-    fi
-
-    if $force
-    then
-        rm -vf "$oldname"
-    else
-        if $keep
-        then
-            echo "Fichier original conservé"
-        else
-            confirm "Supprimer le fichier original?"
-
-            if [[ $? -eq 0 ]]
-            then
-                rm -vf "$oldname"
-            fi
-        fi
-    fi
+    ls -lh "$convertFrom"
+    ls -lh "$convertTo"
 done
