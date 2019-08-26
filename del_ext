@@ -20,7 +20,7 @@ function confirm()
 }
 
 if [[ $# -lt 2 ]]; then
-     echo "Usage: $0 [reference extension] [extension to be deleted]"
+     echo "Usage: $0 [extension to be deleted] [reference extension]"
      exit
 fi 
 
