@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Create a directory based on a file, and move the file into it
+
+for filename in "$@"
+do
+    directoryName="${filename%.*}"
+    mkdir "$directoryName"
+    mv -v "$filename" "$directoryName"
+done
