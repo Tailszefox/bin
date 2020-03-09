@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Applies replaygain info to all compatible files in the specified directory
+
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 [directory]"
+    exit
+fi
+
+cd "$1"
+
+find . -type f | sort | while read f; do
+    # Convert filename to lowercase to match extension
+    filenameLower="${f,,}"
+
+    case "$filenameLower" in
+        *.flac)
+            metaflac --list "$f" | grep -q REPLAYGAIN
+
+            # No replaygain data found
+            if [[ $? -eq 1 ]]; then
+                echo "-> Applying replaygain to FLAC file $f"
+                metaflac --add-replay-gain "$f"
+            fi
+            ;;
+
+        *.ogg)
+            vorbiscomment -l "$f"| grep -q REPLAYGAIN_TRACK
+
+            # No replaygain data found
+            if [[ $? -eq 1 ]]; then
+                echo "-> Applying replaygain to OGG file $f"
+                vorbisgain "$f"
+            fi
+            ;;
+
+        *.mp3 | *.m4a )
+            aacgain -s c "$f" | grep -q "Recommended"
+
+            # No replaygain data found
+            if [[ $? -eq 1 ]]; then
+                echo "-> Applying replaygain to MP3/M4A file $f"
+                aacgain -k "$f"
+            fi
+            ;;
+   esac
+done
