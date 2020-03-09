@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Display info about SSL certificate for specified domains
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $0 [-p port] [-v] domain [domain...]"
+    echo "  -p port"
+    echo "      Use specificed port instead of 443"
+    echo "  -v"
+    echo "      Show all info instead of just dates"
+    exit
+fi
+
+port=443
+outType=dates
+
+while :; do
+    case $1 in
+        -p)
+            port=$2
+            shift
+            ;;
+        -v|--verbose)
+            outType=text
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+for domain in "$@"
+do
+    echo "Checking ${domain}:${port} with out ${outType}..."
+    echo | openssl s_client -connect "${domain}:${port}" -servername "${domain}" 2>/dev/null | openssl x509 -noout -${outType}
+    echo ""
+done
