@@ -1,30 +1,22 @@
 #!/bin/bash
 
-# Mount an ISO as a CD
-
-P=`basename "$0"`
-
 if [[ $# -eq 0 ]]; then
-    echo "Usage: $P (-u) [ISO file]"
+    echo "Usage: $0 [ISO file to mount/unmount]"
     exit
 fi
 
-isoFormat="iso9660"
+isoFile="$1"
+isoFileFullPath=$(readlink -f "$isoFile")
 
-while getopts "uh" opt; do
-    case $opt in
-        u)
-            isoFormat="udf"
-            ;;
-        h)
-            echo "Usage: $P [ISO file]"
-            echo "  -u"
-            echo "      Mount as UDF filesystem instead of iso9660"
-            exit 0
-    esac
-done
+mount | grep -q "$isoFileFullPath"
 
-shift $((OPTIND-1))
-
-echo "Mounting $1 as $isoFormat filesystem..."
-sudo mount "$1" /media/iso -t "$isoFormat" -o loop
+if [[ $? -eq 0 ]]; then
+    mountPoint=$(mount | grep "$isoFileFullPath" | cut -f 3 -d ' ')
+    echo "ISO file $isoFile mounted on $mountPoint, unmounting..."
+    sudo umount -v "$mountPoint"
+    rmdir -v "$mountPoint"
+else
+    tempDirectory=$(mktemp -d -t tails-iso-XXXXXXXXXX)
+    echo "Mounting $isoFileFullPath to $tempDirectory"
+    sudo mount -v -o loop "$isoFileFullPath" "$tempDirectory"
+fi
