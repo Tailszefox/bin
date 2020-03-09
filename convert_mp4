@@ -5,6 +5,11 @@
 for convertFrom in "$@"
 do
     convertTo=${convertFrom%\.*}.mp4
+
+    if [[ -f $convertTo ]]; then
+        convertTo=${convertFrom%\.*}_new.mp4
+    fi
+    
     echo "$convertFrom -> $convertTo"
 
     HandBrakeCLI -i "$convertFrom" -o "$convertTo" -e x264 --x264-preset slow -q 20 --crop 0:0:0:0 -loose-anamorphic
