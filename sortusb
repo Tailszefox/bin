@@ -17,7 +17,7 @@ function confirm()
 }
 
 if [[ $# -lt 1 ]]; then
-    dev=`readlink -e /dev/disk/by-id/usb-*-part1`
+    dev=`readlink -e /dev/disk/by-id/usb-Generic_MassStorageClass_000000001536-0:0-part1`
     mount=`grep "^$dev " /proc/mounts | cut -d " " -f 2`
 else
     mount="$1"
