@@ -17,6 +17,9 @@ if [[ $? -ne 1 ]]; then
     exit
 fi
 
+tail -n 30 /var/log/apt/history.log
+echo ""
+
 aptitude update
 aptitude safe-upgrade
 aptitude full-upgrade
