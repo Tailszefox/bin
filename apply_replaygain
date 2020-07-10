@@ -21,6 +21,11 @@ find . -type f | sort | while read f; do
             if [[ $? -eq 1 ]]; then
                 echo "-> Applying replaygain to FLAC file $f"
                 metaflac --add-replay-gain "$f"
+
+                if [[ $? -eq 1 ]]; then
+                    echo "Failed, trying to resample FLAC file $f"
+                    /home/tails/bin/resample_flac  "$f"
+                fi
             fi
             ;;
 
