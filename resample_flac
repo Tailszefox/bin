@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Resamples FLAC files that aren't compatible with replaygain tags
+
+mkdir resampled
+
+for flac in "$@"
+do
+    echo "Resampling ${flac}..."
+    sox -S "${flac}" -r 44100 -b 16 ./resampled/"${flac}"; 
+done
