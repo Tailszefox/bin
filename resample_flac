@@ -7,5 +7,5 @@ mkdir resampled
 for flac in "$@"
 do
     echo "Resampling ${flac}..."
-    sox -S "${flac}" -r 44100 -b 16 ./resampled/"${flac}"; 
+    sox -S "${flac}" -c 2 -r 44100 -b 16 ./resampled/"${flac}"; 
 done
