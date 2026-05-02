@@ -1,0 +1,29 @@
+#!/bin/bash
+
+palette=("red" "orange" "yellow" "green" "blue" "purple")
+for audioFile in "$@"
+do
+    videoFile=${audioFile%\.*}.mp4
+    duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$audioFile")
+    num_full_minutes=$(awk "BEGIN {printf \"%d\", $duration/60}")
+    remaining_seconds=$(awk "BEGIN {printf \"%f\", $duration%60}")
+
+    filtergraph=""
+    for ((i=0; i<$num_full_minutes; i++))
+    do
+        color="${palette[$i % ${#palette[@]}]}"
+        filtergraph+="color=${color}:s=426x240:d=60[c${i}];"
+    done
+    # Add extra color filter for remaining seconds
+    if (( $(echo "$remaining_seconds > 0" |bc -l) )); then
+        color="${palette[$num_full_minutes % ${#palette[@]}]}"
+        filtergraph+="color=${color}:s=426x240:d=${remaining_seconds}[c${num_full_minutes}];"
+        ((num_full_minutes++))
+    fi
+    filtergraph+="$(for ((i=0; i<$num_full_minutes; i++)); do echo -n "[c${i}]"; done)concat=n=${num_full_minutes}:v=1:a=0"
+
+    ffmpeg -i "$audioFile" \
+        -filter_complex "${filtergraph}" \
+        -c:v libx264 -preset ultrafast -tune stillimage -crf 51 \
+        -c:a copy -shortest "$videoFile"
+done

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for url in "$@"
+do
+    wget --content-disposition "$url"
+done

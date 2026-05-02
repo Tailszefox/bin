@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Check if the argument is provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <directory>"
+    exit 1
+fi
+
+dir="$1"
+
+# Find all .jpg and .jpeg files (case insensitive) in the given directory (non-recursive)
+files=$(find "$dir" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" \) | sort)
+
+declare -A groups
+
+# Group files based on the common prefix before the page number suffix
+for file in $files; do
+    base=$(basename "$file")
+    prefix=$(echo "$base" | sed -E 's/(_p?[0-9]+)?\.(jpg|jpeg)//I')
+    groups["$prefix"]+=" $base"
+done
+
+# Get the number of CPU cores
+num_cores=$(nproc)
+
+# Apply opdf on each set of pages in parallel
+for key in "${!groups[@]}"; do
+    files_sorted=$(echo ${groups[$key]} | tr ' ' '\n' | sort -V | tr '\n' ' ')
+    echo "--- OCRing files: $files_sorted ---"
+    (~/bin/opdf $files_sorted) &
+    # Limit the number of parallel jobs to the number of CPU cores
+    while [ $(jobs -r | wc -l) -ge $num_cores ]; do
+        wait -n
+    done
+done
+
+# Wait for all background jobs to complete
+wait

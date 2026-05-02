@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import subprocess
+import argparse
+
+def get_video_duration(video_file):
+    command = ["ffmpeg", "-i", video_file]
+    result = subprocess.run(command, stderr=subprocess.PIPE, text=True)
+    for line in result.stderr.split('\n'):
+        if "Duration" in line:
+            duration = line.split(",")[0].split("Duration:")[1].strip()
+            return duration
+    return "Duration not found"
+
+def convert_duration_to_seconds(duration):
+    h, m, s = map(float, duration.split(':'))
+    return int(h * 3600 + m * 60 + s)
+
+def split_video_segment(video_file, start_time, segment_duration, segment_number, output_dir=None):
+    base_name = os.path.basename(video_file).rsplit('.', 1)[0]
+    file_extension = os.path.splitext(video_file)[1]  # Get file extension, including the dot
+    output_file = f"{base_name}-split-{segment_number:03d}{file_extension}"
+
+    if output_dir:
+        output_file = os.path.join(output_dir, output_file)
+
+    command = [
+        "ffmpeg", "-y", "-ss", start_time, "-t", segment_duration, 
+        "-i", video_file, "-c", "copy", "-avoid_negative_ts", "make_non_negative", 
+        output_file
+    ]
+    subprocess.run(command)
+
+def calculate_segments(video_file, video_duration, segment_duration, no_short_segments, use_subdirectory):
+    if use_subdirectory:
+        output_dir = "splits"
+        os.makedirs(output_dir, exist_ok=True)
+    else:
+        output_dir = None
+
+    video_duration_seconds = convert_duration_to_seconds(video_duration)
+    segment_duration_seconds = int(segment_duration) * 60
+    overlap_seconds = 5
+    start_time_seconds = 0
+    segments_list = []
+
+    num_full_segments = video_duration_seconds // segment_duration_seconds
+    last_segment_duration = video_duration_seconds % segment_duration_seconds
+
+    if no_short_segments and last_segment_duration < 10 * 60 and num_full_segments > 0:
+        num_full_segments -= 1
+        last_segment_duration += segment_duration_seconds
+
+    for i in range(1, num_full_segments + 1):
+        split_video_segment(video_file, str(start_time_seconds), str(segment_duration_seconds + overlap_seconds), i, output_dir)
+        segments_list.append(f"Segment {i}: {segment_duration} minutes")
+        start_time_seconds += segment_duration_seconds
+    
+    if last_segment_duration > 0:
+        split_video_segment(video_file, str(start_time_seconds), str(last_segment_duration), num_full_segments + 1, output_dir)
+        segments_list.append(f"Segment {num_full_segments + 1}: {last_segment_duration / 60} minutes")
+
+    print(f"\nVideo duration: {video_duration}")
+
+    for s in segments_list:
+        print(s)
+
+def main():
+    parser = argparse.ArgumentParser(description='Process a video file and split it into segments.')
+    parser.add_argument('video_file', type=str, help='The video file to process')
+    parser.add_argument('segment_duration', type=int, help='Duration of each segment in minutes')
+    parser.add_argument('--no-short-segments', action='store_true', help='Roll the last segment into the previous one if it is less than 10 minutes')
+    parser.add_argument('--use-subdirectory', action='store_true', help='Put the segments into a "splits" subdirectory')
+
+    args = parser.parse_args()
+
+    video_duration = get_video_duration(args.video_file)
+
+    if video_duration != "Duration not found":
+        calculate_segments(args.video_file, video_duration, args.segment_duration, args.no_short_segments, args.use_subdirectory)
+    else:
+        print("Unable to determine video duration.")
+
+if __name__ == "__main__":
+    main()
+

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Sort a FAT32 filesystem in alphabetical order
+
+function confirm()
+{
+    echo -n "$@ "
+    read -e answer
+    for response in y Y o O
+    do
+        if [ "_$answer" == "_$response" ]
+        then
+            return 0
+        fi
+    done
+    return 1
+}
+
+mount="$1"
+dev=`grep " $mount " /proc/mounts | cut -d " " -f 1`
+shift 1
+
+if [[ -z $dev ]]; then
+    echo "No mountpoint found, aborting"
+    exit
+fi
+
+echo "The following disk will be sorted:"
+echo "$mount => $dev"
+
+confirm OK?
+if [ $? -eq 1 ]
+then
+    exit
+fi
+
+lsof $mount
+fuser $mount
+
+echo "Sleeping..."
+sleep 5s
+
+umount -v $mount
+
+lsof $dev
+fuser $dev
+
+echo "Press Enter when device is unmounted."
+read z
+
+sudo fatsort $@ $dev
+#sudo fatsort -l $dev

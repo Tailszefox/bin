@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $0 (device) [package name]"
+    exit
+fi
+
+if [[ $# -eq 1 ]]; then
+    packageName=$1
+    deviceOption=""
+elif [[ $# -eq 2 ]]; then
+    device=$1
+    packageName=$2
+    deviceOption="-s $device"
+fi
+
+path=$(adb $deviceOption shell pm path $packageName)
+
+if [[ $path == package:* ]]; then
+    if [[ $path == *$'\n'* ]]; then
+        echo "Multiple packages found"
+        echo $path
+        exit
+    fi
+    fullPath=${path#"package:"}
+    echo "Found package at $fullPath"
+    adb $deviceOption pull "${fullPath}"
+    mv -v base.apk "${packageName}.apk"
+else
+    echo "Package $packageName not found"
+fi

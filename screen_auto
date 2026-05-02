@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Count connected outputs
+connected=$(kscreen-doctor -o | grep connected | wc -l)
+
+if [[ $connected == 2 ]]; then
+    echo "Two screens"
+    kscreen-doctor output.eDP-1.disable
+    kscreen-doctor output.HDMI-A-1.mode.1920x1080@144
+    kscreen-doctor output.HDMI-A-1.enable
+else
+    echo "One screen"
+    kscreen-doctor output.eDP-1.enable
+fi

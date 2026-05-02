@@ -1,0 +1,4 @@
+#!/bin/bash
+
+url=$(git remote -v | grep fetch | awk '{print $2}' | sed 's/git@/http:\/\//' | sed 's/com:/com\//')
+echo "$url"

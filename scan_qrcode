@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "Close terminal, please."
+sleep 2s
+
+tmp="$(mktemp --suffix=.png)" || exit 1
+
+spectacle -r -b -n -o "$tmp" || { rm -f "$tmp"; exit 1; }
+
+zbarimg -q "$tmp"
+status=$?
+
+rm -f "$tmp"
+exit $status

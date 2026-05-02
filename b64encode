@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Prompt the user to enter some text
+echo "Please enter some text:"
+read input_text
+
+# Encode the text in Base64
+encoded_text=$(echo -n "$input_text" | base64)
+
+# Output the encoded text
+echo "Encoded text in Base64:"
+echo $encoded_text

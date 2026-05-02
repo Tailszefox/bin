@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Count files according to their extension
+
+recursive=false
+summary=false
+
+while getopts "rsh" opt; do
+    case $opt in
+        r)
+            recursive=true
+            ;;
+        s)
+            summary=true
+            ;;
+        h)
+            echo "  -r"
+            echo "      Recursive"
+            echo "  -s"
+            echo "      Summary of each subdirectory"
+            exit 0
+            ;;
+    esac
+done
+
+dirs=()
+
+# If summary, add each subdirectory
+if $summary; then
+    for dir in ./*; do
+        if [[ -d "$dir" ]]; then
+            dirs+=("$dir")
+        fi
+    done
+# Else, add only the current directory
+else
+    dirs+=(".")
+fi
+
+if $recursive; then
+    maxdepth=""
+else
+    maxdepth="-maxdepth 1"
+fi
+
+for dir in "${dirs[@]}"; do
+    echo $dir
+    find "$dir" $maxdepth -type f -printf "%f\n" | egrep --invert-match '^\.' | rev | cut -d . -f1 | rev | sort | uniq -c | sort -rn
+done

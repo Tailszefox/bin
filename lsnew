@@ -1,0 +1,20 @@
+#!/bin/bash
+
+
+if [[ $# -eq 0 ]]; then
+    directory="."
+    lines="10"
+elif [[ $# -eq 2 ]]; then
+    directory=$1
+    lines=$2
+else
+    if [[ -d "$1" ]]; then
+        directory=$1
+        lines="10"
+    else
+        directory="."
+        lines=$1
+    fi
+fi
+
+ls --color=always -lta "$directory" | head -n "$lines"

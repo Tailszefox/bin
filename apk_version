@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <apk_file>"
+    exit 1
+fi
+
+APK="$1"
+AAPT="$HOME/Android/Sdk/build-tools/36.0.0/aapt"
+
+if [ ! -x "$AAPT" ]; then
+    echo "Error: aapt not found or not executable at $AAPT"
+    exit 1
+fi
+
+"$AAPT" dump badging "$APK" 2>/dev/null | grep "versionName="

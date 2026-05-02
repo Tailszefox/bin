@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 /path/to/directory"
+    exit 1
+fi
+
+SRC_DIR="$1"
+
+if [ ! -d "$SRC_DIR" ]; then
+    echo "Error: '$SRC_DIR' is not a directory"
+    exit 1
+fi
+
+# Absolute path to be safe
+SRC_DIR="$(realpath "$SRC_DIR")"
+OUT_DIR="$SRC_DIR/normalized"
+
+mkdir -p "$OUT_DIR"
+
+# Detect CPU threads; allow override via MAX_JOBS
+CPU_CORES=$(nproc 2>/dev/null || echo 1)
+MAX_JOBS="${MAX_JOBS:-$CPU_CORES}"
+
+if ! [[ "$MAX_JOBS" =~ ^[0-9]+$ ]] || [ "$MAX_JOBS" -lt 1 ]; then
+    echo "Invalid MAX_JOBS value: $MAX_JOBS"
+    exit 1
+fi
+
+echo "Source directory:     $SRC_DIR"
+echo "Output directory:     $OUT_DIR"
+echo "Max parallel jobs:    $MAX_JOBS"
+echo
+
+shopt -s nullglob
+shopt -s nocaseglob
+
+found_any=false
+
+# Function that processes a single file
+process_one() {
+    local in_file="$1"
+    local base_name out_file
+
+    base_name="$(basename "$in_file")"
+    out_file="$OUT_DIR/${base_name%.*}.ogg"
+
+    echo "[PID $$] Normalizing: $base_name"
+
+    ffmpeg -hide_banner -loglevel warning \
+        -y \
+        -i "$in_file" \
+        -af "asetpts=NB_CONSUMED_SAMPLES/SR/TB,loudnorm=I=-16:TP=-1.5:LRA=11" \
+        -c:a libvorbis -qscale:a 6 \
+        -map_metadata 0 \
+        \
+        -metadata:g REPLAYGAIN_TRACK_GAIN= \
+        -metadata:g REPLAYGAIN_ALBUM_GAIN= \
+        -metadata:g REPLAYGAIN_TRACK_PEAK= \
+        -metadata:g REPLAYGAIN_ALBUM_PEAK= \
+        -metadata:g R128_TRACK_GAIN= \
+        -metadata:g R128_ALBUM_GAIN= \
+        \
+        -metadata:s:a:0 REPLAYGAIN_TRACK_GAIN= \
+        -metadata:s:a:0 REPLAYGAIN_ALBUM_GAIN= \
+        -metadata:s:a:0 REPLAYGAIN_TRACK_PEAK= \
+        -metadata:s:a:0 REPLAYGAIN_ALBUM_PEAK= \
+        -metadata:s:a:0 R128_TRACK_GAIN= \
+        -metadata:s:a:0 R128_ALBUM_GAIN= \
+        "$out_file"
+
+    echo "[PID $$] → Wrote: $out_file"
+    echo
+}
+
+# Simple job control: keep an array of PIDs and cap at MAX_JOBS
+pids=()
+
+for in_file in "$SRC_DIR"/*.ogg "$SRC_DIR"/*.mp3 "$SRC_DIR"/*.flac; do
+    if [ ! -f "$in_file" ]; then
+        continue
+    fi
+
+    found_any=true
+
+    # Start job in background
+    process_one "$in_file" &
+
+    pids+=($!)
+
+    # If we hit the limit, wait for the oldest job to finish
+    if [ "${#pids[@]}" -ge "$MAX_JOBS" ]; then
+        wait "${pids[0]}"
+        # Remove first element
+        pids=("${pids[@]:1}")
+    fi
+done
+
+shopt -u nocaseglob
+shopt -u nullglob
+
+if [ "$found_any" = false ]; then
+    echo "No .ogg files found in '$SRC_DIR'."
+    exit 1
+fi
+
+# Wait for remaining jobs
+for pid in "${pids[@]}"; do
+    wait "$pid"
+done
+
+echo "All done. Normalized files are in: $OUT_DIR"

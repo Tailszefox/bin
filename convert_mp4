@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# Convert a file to MP4 using Handbrake
+
+function confirm()
+{
+    echo -n "$@ "
+    read -e answer
+    for response in y Y yes YES Yes Sure sure SURE OK ok Ok o O oui
+    do
+        if [ "_$answer" == "_$response" ]
+        then
+            return 0
+        fi
+    done
+
+    # Any answer other than the list above is considerred a "no" answer
+    return 1
+}
+
+force=false
+keep=false
+defaultName=true
+directory=false
+suffix=false
+
+while getopts "o:yndsh" opt; do
+    case $opt in
+        o)
+            defaultName=false
+            setName=$OPTARG
+            ;;
+        y)
+            force=true
+            ;;
+        n)
+            keep=true
+            ;;
+        d)
+            directory=true
+            ;;
+        s)
+            suffix=true
+            ;;
+        h)
+            P=`basename "$0"`
+            echo "Usage: $P filename"
+            echo "  -y"
+            echo "      Overwrite the file without confirmation"
+            echo "  -n"
+            echo "      Keep the file without confirmation"
+            echo "  -d"
+            echo "      Place the file in a subdirectory rather than in the source file's directory"
+            echo "  -o [filename]"
+            echo "      Change the name of the converted file (same name with mp4 extension if not specified). Cannot be used with more than one file"
+            echo "  -s"
+            echo "      Add a suffix to the video name (_new.mp4)"
+            exit 0
+    esac
+done
+
+shift $((OPTIND-1))
+
+if ! $defaultName; then 
+    if [[ $# -ge 2 ]]; then
+    echo "-o can only be used with a single input file"
+    exit
+    fi
+fi
+
+
+for f in "$@"
+do
+    echo "Converting $f..."
+
+    filename="$f"
+
+    cd `dirname "$filename"`
+
+    oldname=$filename
+
+    if $defaultName
+    then
+        if $suffix
+        then
+            newname=${filename%\.*}_new.mp4
+        else
+            newname=${filename%\.*}.mp4
+        fi
+    else
+        newname=$setName
+    fi
+
+    if $directory
+    then
+        mkdir -p "./conv"
+        newname="./conv/$newname"
+    fi
+
+    if ls "$newname" &> /dev/null; then
+        echo "Error: file $newname already exists."
+        ls -l "$newname"
+        continue
+    fi
+
+    echo "$oldname -> $newname"
+    HandBrakeCLI -i "$filename" -o "$newname" -e x264 --x264-preset medium -q 20 --crop 0:0:0:0 -loose-anamorphic
+
+    ls -lh "$oldname"
+    ls -lh "$newname"
+
+    if ! ls "$newname" &> /dev/null; then
+        echo "Error..."
+        continue
+    fi
+
+    if $force
+    then
+        rm -vf "$oldname"
+    else
+        if $keep
+        then
+            echo "Original file kept"
+        else
+            confirm "Delete the original file?"
+
+            if [[ $? -eq 0 ]]
+            then
+                rm -vf "$oldname"
+            fi
+        fi
+    fi
+done

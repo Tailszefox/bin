@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Check if an argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 <search_term>"
+  exit 1
+fi
+
+# Extract the search term from the argument
+SEARCH_TERM="$1"
+
+# Define the path to the .zsh_history file
+HISTORY_FILE="$HOME/.zsh_history"
+
+# Search the history file for the command and reformat the output
+awk -v search_term="$SEARCH_TERM" -F ';' \
+'BEGIN { OFS=" " }
+  $2 ~ search_term {
+    split($1, timestamp, ": ");
+    cmd = $2;
+    gsub(search_term, "\033[1;31m" search_term "\033[0m", cmd); # Highlight the search term in red
+    cmd_time = strftime("%Y-%m-%d %H:%M", timestamp[2]);
+    print cmd_time, cmd;
+  }' "$HISTORY_FILE"

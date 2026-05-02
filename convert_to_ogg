@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Converts any input audio/video file to OGG Vorbis at 192k.
+# Runs as many parallel jobs as there are CPU cores.
+
+# Detect number of CPU cores
+if command -v nproc >/dev/null 2>&1; then
+  MAX_JOBS=$(nproc)
+else
+  # Fallback: 4 concurrent jobs
+  MAX_JOBS=4
+fi
+
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 file1 [file2 ...]" >&2
+  exit 1
+fi
+
+convert_one() {
+  local input="$1"
+
+  # Handle spaces in filenames safely
+  if [ ! -f "$input" ]; then
+    echo "Skipping '$input' (not a regular file)" >&2
+    return 0
+  fi
+
+  local base
+  base=$(basename -- "$input")
+  base=${base%.*}
+  local output="${base}.ogg"
+
+  # Avoid overwriting existing file
+  if [ -e "$output" ]; then
+    echo "Output '$output' already exists, skipping." >&2
+    return 0
+  fi
+
+  echo "Converting '$input' -> '$output'" >&2
+
+  ffmpeg -hide_banner -loglevel error \
+    -i "$input" \
+    -vn \
+    -c:a libvorbis -b:a 192k -application audio -cutoff 20000 \
+    "$output" && \
+  echo "Done: '$output'" >&2 || \
+  echo "Failed: '$input'" >&2
+}
+
+# Simple job counter to limit parallelism
+running_jobs=0
+
+for f in "$@"; do
+  convert_one "$f" &
+  running_jobs=$((running_jobs + 1))
+
+  if [ "$running_jobs" -ge "$MAX_JOBS" ]; then
+    # Wait for at least one job to finish
+    wait -n 2>/dev/null || true
+    running_jobs=$((running_jobs - 1))
+  fi
+
+done
+
+# Wait for all remaining jobs
+wait
+
+echo "All conversions finished."

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Prompt the user to enter some text encoded in Base64
+echo "Please enter some text encoded in Base64:"
+read encoded_text
+
+# Try to decode the Base64 text and capture any error
+decoded_text=$(echo -n "$encoded_text" | base64 --decode 2>&1)
+
+# Check if there was an error during the decoding process
+if [[ $? -ne 0 ]]; then
+    echo "Error: Invalid Base64 input. Please ensure the text is Base64 encoded."
+else
+    # Output the decoded text if no error occurred
+    echo "Decoded text:"
+    echo "$decoded_text"
+fi

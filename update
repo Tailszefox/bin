@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Update the system
+
+user=`whoami`
+
+if [[ $user != "root" ]]; then
+    sudo ~/bin/update
+    exit
+fi
+
+echo "Checking if apt isn't running already..."
+pgrep -U root -l apt
+
+if [[ $? -ne 1 ]]; then
+    echo "apt is already running, giving up..."
+    exit
+fi
+
+tail -n 50 /var/log/apt/history.log
+echo ""
+
+aptitude update
+aptitude safe-upgrade
+aptitude full-upgrade
+apt-get autoremove
+
+# Update flatpaks
+flatpak update
+flatpak uninstall --unused

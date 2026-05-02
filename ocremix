@@ -1,0 +1,62 @@
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+    echo "Using clipboard..."
+    # Use clipboard content as the argument
+    clipboard_content=$(wl-paste -t text)
+    if [[ -z "$clipboard_content" ]]; then
+        echo "Clipboard is empty."
+        exit 1
+    fi
+    set -- "$clipboard_content"
+fi
+
+
+for url in "$@"; do
+    if [[ $url != http* ]]; then
+        echo "Invalid URL: ${url}"
+        continue
+    fi
+
+    remixPage=$(mktemp /tmp/ocremix-XXXXXXXXX.html)
+    randomUrl=$(shuf -i 2-4 -n 1)
+
+    echo "Getting ${url} to ${remixPage}..."
+
+    curl "${url}" -o "${remixPage}"
+
+    if [[ $? -ne 0 ]]; then
+        echo "cURL error"
+        continue
+    fi
+
+    remixUrl=$(xmllint --nowarning --html --xpath "//div[@id='modalDownload']//ul//a/@href" ${remixPage} 2> /dev/null | cut -d '=' -f 2 | tr -d '"' | shuf | head -n 1 | recode html..ascii)
+    remixFilename=$(basename ${remixUrl})
+    remixFilename=$(printf '%b' "$(echo "$remixFilename" | sed 's/%/\\x/g')")
+
+    echo "Downloading ${remixUrl} as ${remixFilename}"
+    wget --content-disposition "${remixUrl}"
+
+    if [[ ! -f "${remixFilename}" ]]; then
+        echo "${remixFilename} not found"
+        continue
+    fi
+
+    # Get the current values
+    title=$(mid3v2 -l "${remixFilename}" | grep -i "TIT2" | sed -e 's/^TIT2=//')
+    artist=$(mid3v2 -l "${remixFilename}" | grep -i "TPE1" | sed -e 's/^TPE1=//')
+    album=$(mid3v2 -l "${remixFilename}" | grep -i "TALB" | sed -e 's/^TALB=//')
+    track=$(mid3v2 -l "${remixFilename}" | grep -i "TRCK" | sed -e 's/^TRCK=//')
+
+    # Remove all tags from the MP3 file
+    mid3v2 --delete-all "${remixFilename}"
+
+    # Set the Title, Artist, Album, and Album Artist tags
+    mid3v2 -t "$title" -a "$artist" -A "$album" --TPE2 "OverClocked ReMix" -T "$track" "${remixFilename}"
+
+    ~/bin/apply_replaygain "${remixFilename}"
+
+    mv -v "${remixFilename}" ~/Music/OC\ ReMix
+done
+
+ls --color=always -lta ~/Music/OC\ ReMix | head

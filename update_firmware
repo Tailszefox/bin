@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Check for firmware updates
+
+fwupdmgr refresh
+fwupdmgr get-updates
